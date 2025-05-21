@@ -1,14 +1,50 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Stream Local - A local media streaming application" />
-    <title>Stream Local</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Excalibrate - A wrapper for Excalidraw with live video and chat collaboration features" />
+  <title>Excalibrate - Collaborative Drawing</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body class="bg-[var(--bg-dark)] text-[var(--text-light)] min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full p-8 bg-[var(--bg-card)] rounded-xl shadow-lg">
+    <div class="flex justify-center mb-6">
+      <div class="w-16 h-16 rounded-full bg-[var(--primary)] flex items-center justify-center text-white">
+        LOGO
+      </div>
+    </div>
+    
+    <h1 id="formTitle" class="text-2xl font-bold text-center mb-2">Create or Join a Room</h1>
+    <p id="formSubtitle" class="text-center text-gray-400 mb-8">Enter a room name to get started</p>
+    
+    <form class="space-y-6">
+      <div>
+        <input 
+          id="inputField" 
+          type="text" 
+          placeholder="Enter room name" 
+          class="form-input"
+          required
+        >
+      </div>
+      
+      <div class="flex justify-center">
+        <button 
+          id="continueButton" 
+          type="submit" 
+          class="form-button"
+        >
+          CONTINUE
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <script type="module" src="/src/landing/index.ts"></script>
+</body>
+
 </html>

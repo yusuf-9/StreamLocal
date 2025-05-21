@@ -1,1 +1,26 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-dark: #121212;
+  --bg-card: #1e1e1e;
+  --bg-input: #2a2a2a;
+  --text-light: #e0e0e0;
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-hover: #4338ca;
+}
+
+/* Custom classes for our form */
+.form-input {
+  @apply w-full px-4 py-3 rounded-lg bg-[var(--bg-input)] text-[var(--text-light)] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)];
+}
+
+.form-button {
+  @apply px-6 py-3 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary-dark)] focus:ring-offset-2 focus:ring-offset-[var(--bg-dark)];
+}

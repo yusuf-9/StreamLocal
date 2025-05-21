@@ -1,0 +1,12 @@
+{
+  "name": "streamlocal",
+  "version": "1.0.0",
+  "description": "A free streaming app with the streaming features of discord nitro ;)",
+  "main": "index.js",
+  "scripts": {
+    "start-client": "cd app/client && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

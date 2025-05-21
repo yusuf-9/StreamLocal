@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Stream Local - A local media streaming application" />
+  <title>Room - Stream Local</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-[var(--bg-dark)] text-[var(--text-light)] h-screen flex overflow-hidden">
+  <!-- Left Sidebar - Collapsible -->
+  <div id="leftSidebar" class="w-64 bg-[var(--bg-card)] border-r border-gray-800 flex flex-col transition-all duration-300">
+    <!-- Toggle button for left sidebar -->
+    <button id="toggleLeftSidebar" class="absolute top-4 left-64 bg-[var(--bg-card)] p-2 rounded-r-md border-r border-t border-b border-gray-800 z-10">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+    </button>
+    
+    <!-- Left sidebar content -->
+    <div class="p-4 border-b border-gray-800">
+      <h2 class="font-bold text-xl">Participants</h2>
+    </div>
+    
+    <!-- User list -->
+    <div id="userList" class="flex-grow overflow-y-auto p-2 space-y-2">
+      <!-- User items will be inserted here by JavaScript -->
+    </div>
+  </div>
+  
+  <!-- Middle Content - No overflow -->
+  <div id="middleContent" class="flex-grow flex flex-col bg-[var(--bg-dark)] p-6 overflow-hidden">
+    <!-- Video selection and player area -->
+    <div class="flex flex-col items-center justify-center h-full w-full">
+      <!-- Video selection button (shown when no video is selected) -->
+      <div id="videoSelectArea" class="flex flex-col items-center justify-center w-full">
+        <h2 class="text-2xl font-bold mb-6">Select a video to play</h2>
+        <label for="videoFileInput" class="form-button flex items-center cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4V5h12v10z" clip-rule="evenodd" />
+            <path d="M8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" />
+          </svg>
+          Select Video
+        </label>
+        <input type="file" id="videoFileInput" accept="video/*" class="hidden" />
+      </div>
+      
+      <!-- Video player (hidden initially) -->
+      <div id="videoPlayerArea" class="w-full h-full flex flex-col hidden">
+        <div class="bg-[var(--bg-card)] rounded-lg overflow-hidden shadow-lg flex-grow flex flex-col max-h-full">
+          <div class="relative flex-grow flex items-center justify-center overflow-hidden">
+            <video id="videoPlayer" class="max-w-full max-h-full object-contain" controls>
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          
+          <div class="p-4 flex justify-between items-center">
+            <div>
+              <h3 id="videoFileName" class="text-lg font-medium truncate max-w-xs"></h3>
+              <p id="videoFileSize" class="text-sm text-gray-400"></p>
+            </div>
+            
+            <button id="selectDifferentVideo" class="px-4 py-2 bg-[var(--bg-input)] hover:bg-gray-700 rounded-md transition-colors">
+              Change Video
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Right Sidebar - Collapsible (collapsed by default) -->
+  <div id="rightSidebar" class="w-0 bg-[var(--bg-card)] border-l border-gray-800 flex flex-col transition-all duration-300">
+    <!-- Toggle button for right sidebar -->
+    <button id="toggleRightSidebar" class="absolute top-4 right-0 bg-[var(--bg-card)] p-2 rounded-l-md border-l border-t border-b border-gray-800 z-10">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+    </button>
+    
+    <!-- Empty right column content -->
+  </div>
+
+  <script type="module" src="/src/room/index.ts"></script>
+</body>
+</html> 
