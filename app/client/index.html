@@ -1,50 +1,337 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html
+  lang="en"
+  class="dark"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <link
+      rel="stylesheet"
+      href="/src/style.css"
+    />
+    <title>StreamLocal - Real-time Video Streaming</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Excalibrate - A wrapper for Excalidraw with live video and chat collaboration features" />
-  <title>Excalibrate - Collaborative Drawing</title>
-  <link rel="stylesheet" href="/src/style.css">
-</head>
+  <body class="bg-gray-900 text-white overflow-x-hidden">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 bg-gradient-animated opacity-20 -z-10"></div>
 
-<body class="bg-[var(--bg-dark)] text-[var(--text-light)] min-h-screen flex items-center justify-center">
-  <div class="max-w-md w-full p-8 bg-[var(--bg-card)] rounded-xl shadow-lg">
-    <div class="flex justify-center mb-6">
-      <div class="w-16 h-16 rounded-full bg-[var(--primary)] flex items-center justify-center text-white">
-        LOGO
-      </div>
+    <!-- Floating Particles -->
+    <div class="fixed inset-0 -z-10">
+      <div class="absolute top-20 left-10 w-3 h-3 bg-blue-400 rounded-full animate-float opacity-70"></div>
+      <div
+        class="absolute top-40 right-20 w-4 h-4 bg-purple-400 rounded-full animate-float opacity-60"
+        style="animation-delay: 2s; animation-duration: 6s;"
+      ></div>
+      <div
+        class="absolute bottom-40 left-20 w-3 h-3 bg-pink-400 rounded-full animate-float opacity-60"
+        style="animation-delay: 4s; animation-duration: 8s;"
+      ></div>
+      <div
+        class="absolute bottom-20 right-10 w-5 h-5 bg-indigo-400 rounded-full animate-float opacity-50"
+        style="animation-delay: 1s; animation-duration: 7s;"
+      ></div>
     </div>
-    
-    <h1 id="formTitle" class="text-2xl font-bold text-center mb-2">Create or Join a Room</h1>
-    <p id="formSubtitle" class="text-center text-gray-400 mb-8">Enter a room name to get started</p>
-    
-    <form class="space-y-6">
-      <div>
-        <input 
-          id="inputField" 
-          type="text" 
-          placeholder="Enter room name" 
-          class="form-input"
-          required
-        >
-      </div>
-      
-      <div class="flex justify-center">
-        <button 
-          id="continueButton" 
-          type="submit" 
-          class="form-button"
-        >
-          CONTINUE
-        </button>
-      </div>
-    </form>
-  </div>
-  
-  <script type="module" src="/src/landing/index.ts"></script>
-</body>
 
+    <div class="min-h-screen flex flex-col">
+      <!-- Header -->
+      <header class="relative z-10 p-6">
+        <nav class="max-w-7xl mx-auto flex justify-between items-center">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                ></path>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gradient">StreamLocal</h1>
+          </div>
+          <div class="hidden md:flex space-x-6">
+            <a
+              href="#features"
+              class="text-gray-300 hover:text-white transition-colors"
+              >Features</a
+            >
+            <a
+              href="#about"
+              class="text-gray-300 hover:text-white transition-colors"
+              >About</a
+            >
+          </div>
+        </nav>
+      </header>
+
+      <!-- Main Content -->
+      <main class="flex-1 flex items-center justify-center px-6">
+        <div class="max-w-6xl mx-auto text-center">
+          <!-- Hero Section -->
+          <div class="animate-fade-in">
+            <h2 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              Stream Together,
+              <span class="text-gradient block">Watch Together</span>
+            </h2>
+            <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Experience real-time video streaming with friends. Share your screen or video files in crystal-clear
+              quality with synchronized playback and voice chat.
+            </p>
+          </div>
+
+          <!-- Features Grid -->
+          <div
+            id="features"
+            class="grid md:grid-cols-3 gap-8 mb-16 animate-slide-up"
+          >
+            <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
+              <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <svg
+                  class="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  ></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">Lightning Fast</h3>
+              <p class="text-gray-400">Stream in 1080p/60fps or better with WebRTC technology for minimal latency.</p>
+            </div>
+
+            <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
+              <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <svg
+                  class="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  ></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">Perfect Sync</h3>
+              <p class="text-gray-400">Everyone stays in perfect sync - play, pause, and seek together in real-time.</p>
+            </div>
+
+            <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
+              <div class="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                <svg
+                  class="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                  ></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">Voice Chat</h3>
+              <p class="text-gray-400">Built-in voice chat keeps everyone connected during the watch party.</p>
+            </div>
+          </div>
+
+          <!-- Room Creation Form -->
+          <div class="max-w-md mx-auto animate-slide-up">
+            <div class="glass-effect rounded-3xl p-8 glow-effect">
+              <h3 class="text-2xl font-bold mb-6">Create Your Room</h3>
+              <form
+                id="roomForm"
+                class="space-y-6"
+              >
+                <div>
+                  <label
+                    for="roomName"
+                    class="block text-sm font-medium text-gray-300 mb-2"
+                    >Room Name</label
+                  >
+                  <input
+                    type="text"
+                    id="roomName"
+                    name="roomName"
+                    placeholder="Enter room name..."
+                    class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-400"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                >
+                  Create Room
+                  <svg
+                    class="w-5 h-5 ml-2 inline"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    ></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- About Section -->
+          <div
+            id="about"
+            class="mt-20 animate-slide-up"
+          >
+            <div class="glass-effect rounded-3xl p-8 max-w-4xl mx-auto">
+              <h3 class="text-3xl font-bold mb-6 text-gradient">How It Works</h3>
+              <div class="grid md:grid-cols-2 gap-8 text-left">
+                <div>
+                  <h4 class="text-xl font-semibold mb-3 text-blue-400">For Streamers</h4>
+                  <ul class="space-y-2 text-gray-300">
+                    <li class="flex items-center">
+                      <svg
+                        class="w-5 h-5 text-green-400 mr-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                      Share your screen or video files
+                    </li>
+                    <li class="flex items-center">
+                      <svg
+                        class="w-5 h-5 text-green-400 mr-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                      Control playback for everyone
+                    </li>
+                    <li class="flex items-center">
+                      <svg
+                        class="w-5 h-5 text-green-400 mr-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                      High-quality streaming up to 1080p/60fps
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="text-xl font-semibold mb-3 text-purple-400">For Viewers</h4>
+                  <ul class="space-y-2 text-gray-300">
+                    <li class="flex items-center">
+                      <svg
+                        class="w-5 h-5 text-green-400 mr-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                      Join rooms instantly with a link
+                    </li>
+                    <li class="flex items-center">
+                      <svg
+                        class="w-5 h-5 text-green-400 mr-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                      Synchronized viewing experience
+                    </li>
+                    <li class="flex items-center">
+                      <svg
+                        class="w-5 h-5 text-green-400 mr-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                      Voice chat with friends
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="text-center py-8 text-gray-400">
+        <p>&copy; 2024 StreamLocal. Built with ❤️ for seamless streaming experiences.</p>
+      </footer>
+    </div>
+
+    <script
+      type="module"
+      src="/src/landing/index.ts"
+    ></script>
+  </body>
 </html>
