@@ -4,7 +4,9 @@
   "description": "A free streaming app with the streaming features of discord nitro ;)",
   "main": "index.js",
   "scripts": {
-    "dev-client": "cd app/client && npm run dev"
+    "dev-client": "cd app/client && npm run dev",
+    "dev-server": "cd app/server && npm run dev",
+    "dev": "npm run dev-client & npm run dev-server"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,7 @@
+1. Socket work
+2. Video streaming work
+3. Audio channel work
+4. Minor enhancements in functionality
+5. Minor enhancements in UI/UX
+6. Documentation
+7. Deployment

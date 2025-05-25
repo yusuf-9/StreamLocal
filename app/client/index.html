@@ -91,102 +91,28 @@
             </p>
           </div>
 
-          <!-- Features Grid -->
-          <div
-            id="features"
-            class="grid md:grid-cols-3 gap-8 mb-16 animate-slide-up"
-          >
-            <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
-              <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <svg
-                  class="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  ></path>
+      
+          <!-- Room Creation Form -->
+          <div class="max-w-md mx-auto mb-16 animate-slide-up">
+            <div id="room-form-container" class="glass-effect rounded-3xl p-8 glow-effect">
+              <div class="flex justify-center items-center">
+                <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <h3 class="text-xl font-semibold mb-3">Lightning Fast</h3>
-              <p class="text-gray-400">Stream in 1080p/60fps or better with WebRTC technology for minimal latency.</p>
-            </div>
-
-            <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
-              <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <svg
-                  class="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  ></path>
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold mb-3">Perfect Sync</h3>
-              <p class="text-gray-400">Everyone stays in perfect sync - play, pause, and seek together in real-time.</p>
-            </div>
-
-            <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
-              <div class="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <svg
-                  class="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                  ></path>
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold mb-3">Voice Chat</h3>
-              <p class="text-gray-400">Built-in voice chat keeps everyone connected during the watch party.</p>
             </div>
           </div>
 
-          <!-- Room Creation Form -->
-          <div class="max-w-md mx-auto animate-slide-up">
-            <div class="glass-effect rounded-3xl p-8 glow-effect">
-              <h3 class="text-2xl font-bold mb-6">Create Your Room</h3>
-              <form
-                id="roomForm"
-                class="space-y-6"
-              >
-                <div>
-                  <label
-                    for="roomName"
-                    class="block text-sm font-medium text-gray-300 mb-2"
-                    >Room Name</label
-                  >
-                  <input
-                    type="text"
-                    id="roomName"
-                    name="roomName"
-                    placeholder="Enter room name..."
-                    class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-400"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-                >
-                  Create Room
+              <!-- Features Grid -->
+              <div
+              id="features"
+              class="grid md:grid-cols-3 gap-8 mb-16 animate-slide-up"
+            >
+              <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
+                <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                   <svg
-                    class="w-5 h-5 ml-2 inline"
+                    class="w-6 h-6 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -195,13 +121,55 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
                     ></path>
                   </svg>
-                </button>
-              </form>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Lightning Fast</h3>
+                <p class="text-gray-400">Stream in 1080p/60fps or better with WebRTC technology for minimal latency.</p>
+              </div>
+  
+              <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
+                <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <svg
+                    class="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Perfect Sync</h3>
+                <p class="text-gray-400">Everyone stays in perfect sync - play, pause, and seek together in real-time.</p>
+              </div>
+  
+              <div class="feature-card glass-effect rounded-2xl p-6 transition-all duration-300">
+                <div class="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <svg
+                    class="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                    ></path>
+                  </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Voice Chat</h3>
+                <p class="text-gray-400">Built-in voice chat keeps everyone connected during the watch party.</p>
+              </div>
             </div>
-          </div>
+  
 
           <!-- About Section -->
           <div
@@ -331,7 +299,7 @@
 
     <script
       type="module"
-      src="/src/landing/index.ts"
+      src="/src/modules/landing/index.ts"
     ></script>
   </body>
 </html>
