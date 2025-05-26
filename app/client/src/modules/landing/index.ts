@@ -181,19 +181,19 @@ async function handleJoinRoom(e: SubmitEvent) {
         "Content-Type": "application/json",
       },
     });
+    const data = await response.json();
 
     if (!response.ok) {
-      throw new Error("Failed to join room. Please try again later.");
+      throw new Error(data.error);
     }
 
-    const data = await response.json();
     const userId = data.userId;
 
     // navigate to room page with roomId and hostId as query params
     window.location.href = `room.html?${QUERY_PARAM_KEYS.ROOM_ID}=${roomId}&${QUERY_PARAM_KEYS.USER_ID}=${userId}`;
   } catch (error) {
     console.error(error);
-    errorText.textContent = "Failed to join room. Please try again later.";
+    errorText.textContent = error instanceof Error ? error.message : "Failed to join room. Please try again later.";
     errorText.classList.remove("hidden");
   } finally {
     button.innerHTML = "Join Room";
@@ -246,7 +246,7 @@ async function loadRoomForm() {
           />
         </div>
         <div>
-          <div id="errorText" class="hidden text-red-500 text-sm mt-2"></div>
+          <div id="errorText" class="hidden text-red-500 text-sm font-semibold mt-2"></div>
         </div>
         <button
           type="submit"
@@ -302,7 +302,7 @@ async function loadRoomForm() {
           />
         </div>
         <div>
-          <div id="errorText" class="hidden text-red-500 text-sm mt-2"></div>
+          <div id="errorText" class="hidden text-red-500 text-sm font-semibold mt-2"></div>
         </div>
         <button
           type="submit"

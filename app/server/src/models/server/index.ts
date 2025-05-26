@@ -98,6 +98,26 @@ export class Server {
       }
     });
 
+    router.get("/room/:roomId", (req, res, next) => {
+      try {
+        const { roomId } = req.params;
+        const room = this.store.getRoom(roomId);
+        if (!room) {
+          throw new CustomError(404, "Room not found");
+        }
+
+        const roomData = {
+          name: room.name,
+          users: Array.from(room.connections.values()).filter((user) => Boolean(user.socketId)),
+          messages: room.messages,
+        };
+
+        res.status(200).json(roomData);
+      } catch (error) {
+        next(error);
+      }
+    });
+
     // Mount all API routes under /api
     this.app.use("/api", router);
   }
