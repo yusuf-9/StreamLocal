@@ -20,8 +20,8 @@ export class Server {
 
   private setupMiddleware(): void {
     // Handle static files from public folder
-    const publicPath = path.join(__dirname, "../../public");
-    this.app.use(express.static(publicPath));
+    // const publicPath = path.join(__dirname, "../../public");
+    // this.app.use(express.static(publicPath));
     this.app.use(express.json());
     this.app.use(cors());
   }
@@ -108,7 +108,7 @@ export class Server {
 
         const roomData = {
           name: room.name,
-          users: Array.from(room.connections.values()).filter((user) => Boolean(user.socketId)),
+          users: Array.from(room.connections.values()),
           messages: room.messages,
         };
 

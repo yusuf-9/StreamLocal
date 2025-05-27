@@ -1,26 +1,28 @@
 export interface RoomState {
-    roomId: string;
-    roomName: string;
-    members: Member[];
-    messages: Message[];
-    user: Member | null;
-}
-
-export interface RoomPageState {
+    room: {
+        id: string;
+        name: string;
+        members: Member[];
+        messages: Message[];
+    };
     isMobile: boolean;
     isLeftSidebarOpen: boolean;
     isRightSidebarOpen: boolean;
+    user: Member | null;
+    isRoomLoaded: boolean;
 }
 
 export interface Member {
     id: string;
     userName: string;
     socketId: string;
+    isHost: boolean;
+    joinedAt: number;
 }
 
 export interface Message {
     id: string;
     content: string;
     senderId: string;
-    createdAt: Date;
+    createdAt: number;
 }

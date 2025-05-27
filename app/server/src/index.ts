@@ -1,6 +1,6 @@
 import Store from "./models/store";
 import { Server } from "./models/server";
-import { Socket } from "./models/ws";
+import Socket from "./models/ws";
 
 class App {
   private store: Store;
@@ -15,7 +15,7 @@ class App {
   }
 
   public start(): void {
-    this.server.start();
+    this.socket.start(3000);
   }
 }
 

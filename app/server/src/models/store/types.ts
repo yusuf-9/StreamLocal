@@ -16,11 +16,12 @@ export interface Connection {
     socketId: string;
     userName: string;
     isHost: boolean;
+    joinedAt: number;
 }
 
 export interface Message {
     id: string;
     content: string;
-    createdAt: Date;
+    createdAt: number;
     senderId: string;
 }

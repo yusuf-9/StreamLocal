@@ -1,4 +1,4 @@
-import { Room, Store as StoreType, Connection } from "./types";
+import { Room, Store as StoreType, Connection, Message } from "./types";
 import CustomError from "../error";
 import { generateUUID } from "../../utils";
 
@@ -28,6 +28,7 @@ export default class Store {
             socketId: "",
             userName: userName,
             isHost: true,
+            joinedAt: new Date().getTime(),
           },
         ],
       ]),
@@ -47,7 +48,8 @@ export default class Store {
       id: userId,
       socketId: "",
       userName: userName,
-      isHost: false
+      isHost: false,
+      joinedAt: new Date().getTime(),
     });
     return userId;
   }
@@ -81,5 +83,24 @@ export default class Store {
 
   public getRoom(roomId: string): Room | null {
     return this.data.rooms.get(roomId) ?? null;
+  }
+
+  public getRooms(): Room[] {
+    return Array.from(this.data.rooms.values());
+  }
+
+  public addMessage(roomId: string, userId: string, content: string): Message {
+    const room = this.data.rooms.get(roomId);
+    if (!room) {
+      throw new CustomError(404, "Room not found");
+    }
+    const message: Message = {
+      id: generateUUID(),
+      content,
+      createdAt: new Date().getTime(),
+      senderId: userId,
+    };
+    room.messages.push(message);
+    return message;
   }
 }

@@ -11,6 +11,7 @@ export const EVENTS = {
 
   // room-specific events
   USER_JOINED: "user-joined",
+  USER_LEFT: "user-left",
   SEND_MESSAGE: "send-message",
   RECEIVE_MESSAGE: "receive-message",
   ERROR: "error",
