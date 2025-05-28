@@ -32,6 +32,7 @@ export function initializeRoomUI() {
     roomUsersList: document.getElementById("roomUsersList")!,
     chatMessages: document.getElementById("chatMessages")!,
     shareBtn: document.getElementById("shareBtn")!,
+    endCallBtn: document.getElementById("endCallBtn")!,
   };
 
   // Initialize mobile state
@@ -193,6 +194,10 @@ export function initializeRoomUI() {
       });
   }
 
+  function handleEndCall() {
+    window.location.href = "/";
+  }
+
   elements.shareBtn.addEventListener("click", handleShare);
 
   // Set up event listeners
@@ -205,6 +210,7 @@ export function initializeRoomUI() {
   elements.toggleRight.addEventListener("click", toggleRightSidebar);
   elements.floatingLeftToggle.addEventListener("click", toggleLeftSidebar);
   elements.floatingRightToggle.addEventListener("click", toggleRightSidebar);
+  elements.endCallBtn.addEventListener("click", handleEndCall);
 
   // Initialize layout
   updateLayout();
@@ -240,50 +246,48 @@ export function updateUsersInLeftSidebar() {
     .map((member, index) => {
       const colorGradient = getColorGradient(index % userColorGradients.length);
       const isUserActive = member.socketId.length > 0;
+      const isMuted = member.isMuted;
+
       return `
-          <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700/30 transition-colors">
-            <div class="relative">
-              <div
-                class="w-8 h-8 rounded-full bg-gradient-to-r ${colorGradient} flex items-center justify-center text-white font-medium"
-              >
-                ${member.userName[0]}
-              </div>
-              <div
-                class="absolute -bottom-1 -right-1 w-3 h-3 ${
-                  isUserActive ? "bg-green-500" : "bg-gray-500"
-                } border-2 border-gray-800 rounded-full"
-              ></div>
+        <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700/30 transition-colors">
+          <div class="relative">
+            <div
+              class="w-8 h-8 rounded-full bg-gradient-to-r ${colorGradient} flex items-center justify-center text-white font-medium"
+            >
+              ${member.userName[0]}
             </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium">${member.userName}</p>
-              <p class="text-xs text-gray-400">${member.isHost ? "Host" : ""}</p>
-            </div>
-            ${
-              isUserActive
-                ? `
-            <div class="audio-bars">
-              <div
-                class="audio-bar"
-                style="height: 8px"
-              ></div>
-              <div
-                class="audio-bar"
-                style="height: 12px"
-              ></div>
-              <div
-                class="audio-bar"
-                style="height: 6px"
-              ></div>
-              <div
-                class="audio-bar"
-                style="height: 10px"
-              ></div>
-            </div>
-            `
-                : ""
-            }
+            <div
+              class="absolute -bottom-1 -right-1 w-3 h-3 ${
+                isUserActive ? "bg-green-500" : "bg-gray-500"
+              } border-2 border-gray-800 rounded-full"
+            ></div>
           </div>
-          `;
+          <div class="flex-1">
+            <p class="text-sm font-medium">${member.userName}</p>
+            <p class="text-xs text-gray-400">${member.isHost ? "Host" : ""}</p>
+          </div>
+          ${
+            isUserActive
+              ? `
+          <div class="flex items-center space-x-2">
+            ${
+              isMuted
+                ? `<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                    <line x1="17" y1="7" x2="7" y2="17" stroke="currentColor" stroke-width="2"></line>
+                  </svg>`
+                : `<div class="audio-bars">
+                    <div class="audio-bar" style="height: 8px"></div>
+                    <div class="audio-bar" style="height: 12px"></div>
+                    <div class="audio-bar" style="height: 6px"></div>
+                    <div class="audio-bar" style="height: 10px"></div>
+                  </div>`
+            }
+          </div>`
+              : ""
+          }
+        </div>
+      `;
     })
     .join("");
 }

@@ -48,7 +48,16 @@ export default class SocketModel {
             socket.join(payload.roomId);
             const socketConnection = this.store.updateUserSocketId(payload.roomId, payload.userId, socket.id);
 
-            // socket.emit(EVENTS.JOINED_ROOM, socketConnection);
+            // Send current mute states to the joining user
+            const mutedUsers = Array.from(room.connections.values())
+              .filter(conn => conn.isMuted)
+              .map(conn => ({
+                userId: conn.id,
+                isMuted: conn.isMuted
+              }));
+
+            socket.emit(EVENTS.USER_AUDIO_STATUS_CHANGED, mutedUsers);
+            
             callback(socketConnection);
             socket.broadcast.to(payload.roomId).emit(EVENTS.USER_JOINED, socketConnection);
           }
@@ -75,6 +84,81 @@ export default class SocketModel {
           }
         )
       );
+
+      // Add WebRTC signaling handlers
+      socket.on(
+        EVENTS.SEND_WEBRTC_OFFER,
+        this.createErrorBoundary(socket, ({ to, offer, roomId }: { to: string; offer: any; roomId: string }) => {
+          const room = this.store.getRoom(roomId);
+          if (!room) {
+            throw new Error("Room not found");
+          }
+
+          const connection = room.connections.get(to);
+          if (!connection || connection.socketId === "") {
+            throw new Error("Connection not found");
+          }
+
+          socket.to(connection.socketId).emit(EVENTS.RECEIVE_WEBRTC_OFFER, { from: socket.id, offer });
+        })
+      );
+
+      socket.on(
+        EVENTS.SEND_WEBRTC_ANSWER,
+        this.createErrorBoundary(socket, ({ to, answer, roomId }: { to: string; answer: any; roomId: string }) => {
+          const room = this.store.getRoom(roomId);
+          if (!room) {
+            throw new Error("Room not found");
+          }
+
+          const connection = room.connections.get(to);
+          if (!connection || connection.socketId === "") {
+            throw new Error("Connection not found");
+          }
+
+          socket.to(connection.socketId).emit(EVENTS.RECEIVE_WEBRTC_ANSWER, { from: socket.id, answer });
+        })
+      );
+
+      socket.on(
+        EVENTS.SEND_WEBRTC_ICE_CANDIDATE,
+        this.createErrorBoundary(
+          socket,
+          ({ to, candidate, roomId }: { to: string; candidate: any; roomId: string }) => {
+            const room = this.store.getRoom(roomId);
+            if (!room) {
+              throw new Error("Room not found");
+            }
+
+            const connection = room.connections.get(to);
+            if (!connection || connection.socketId === "") {
+              throw new Error("Connection not found");
+            }
+
+            socket.to(connection.socketId).emit(EVENTS.RECEIVE_WEBRTC_ICE_CANDIDATE, { from: socket.id, candidate });
+          }
+        )
+      );
+
+      socket.on(EVENTS.AUDIO_STATUS_CHANGED, ({ roomId, userId, isMuted }) => {
+        const room = this.store.getRoom(roomId);
+        if (!room) {
+          socket.emit(EVENTS.ERROR, "Room not found");
+          return;
+        }
+
+        // Update the mute status in the store
+        const connection = room.connections.get(userId);
+        if (connection) {
+          connection.isMuted = isMuted;
+        }
+
+        // Broadcast to all users in the room except sender
+        socket.broadcast.to(roomId).emit(EVENTS.USER_AUDIO_STATUS_CHANGED, {
+          userId,
+          isMuted
+        });
+      });
 
       socket.on("disconnect", () => {
         console.log("Client disconnected");

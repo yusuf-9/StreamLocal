@@ -17,6 +17,7 @@ export interface Connection {
     userName: string;
     isHost: boolean;
     joinedAt: number;
+    isMuted: boolean;
 }
 
 export interface Message {

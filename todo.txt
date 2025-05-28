@@ -1,7 +1,13 @@
 1. Socket work - done
 2. Video streaming work
 3. Audio channel work
-4. Minor enhancements in functionality
+4. Minor enhancements in functionality - 
+    4.1. Allow users to rejoin a session.
+        - Cache room id and user Id.
+        - If the room id in the invite link matches the cached room id, then join the session using the cached user Id.
+    4.2 - minor improvements 
+        - Play a sound when a user joins/leaves the room
+        -
 5. Minor enhancements in UI/UX
 6. Documentation
 7. Deployment

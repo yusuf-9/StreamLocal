@@ -29,6 +29,7 @@ export default class Store {
             userName: userName,
             isHost: true,
             joinedAt: new Date().getTime(),
+            isMuted: false,
           },
         ],
       ]),
@@ -50,6 +51,7 @@ export default class Store {
       userName: userName,
       isHost: false,
       joinedAt: new Date().getTime(),
+      isMuted: false,
     });
     return userId;
   }
@@ -65,6 +67,7 @@ export default class Store {
     }
 
     connection.socketId = socketId;
+    connection.isMuted = false;
 
     return connection;
   }

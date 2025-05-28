@@ -18,6 +18,7 @@ export interface Member {
     socketId: string;
     isHost: boolean;
     joinedAt: number;
+    isMuted: boolean;
 }
 
 export interface Message {
