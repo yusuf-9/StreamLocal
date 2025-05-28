@@ -31,7 +31,7 @@ export function initializeRoomUI() {
     roomMembersCount: document.getElementById("roomMembersCount")!,
     roomUsersList: document.getElementById("roomUsersList")!,
     chatMessages: document.getElementById("chatMessages")!,
-    shareButton: document.getElementById("shareButton")!,
+    shareBtn: document.getElementById("shareBtn")!,
   };
 
   // Initialize mobile state
@@ -193,7 +193,7 @@ export function initializeRoomUI() {
       });
   }
 
-  elements.shareButton.addEventListener("click", handleShare);
+  elements.shareBtn.addEventListener("click", handleShare);
 
   // Set up event listeners
   window.addEventListener("resize", () => {
@@ -218,7 +218,7 @@ export function initializeRoomUI() {
     elements.toggleRight.removeEventListener("click", toggleRightSidebar);
     elements.floatingLeftToggle.removeEventListener("click", toggleLeftSidebar);
     elements.floatingRightToggle.removeEventListener("click", toggleRightSidebar);
-    elements.shareButton.removeEventListener("click", handleShare);
+    elements.shareBtn.removeEventListener("click", handleShare);
     const overlay = document.getElementById("mobileOverlay");
     if (overlay) overlay.remove();
   };

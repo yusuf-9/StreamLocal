@@ -1,4 +1,4 @@
-1. Socket work
+1. Socket work - done
 2. Video streaming work
 3. Audio channel work
 4. Minor enhancements in functionality

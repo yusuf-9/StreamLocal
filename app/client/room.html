@@ -126,8 +126,12 @@
           <div class="flex items-center justify-center space-x-4 lg:space-x-6">
             <button
               id="muteBtn"
-              class="control-button w-10 h-10 lg:w-12 lg:h-12 bg-gray-700/50 hover:bg-gray-600/50 rounded-full flex items-center justify-center glass-effect"
+              class="control-button cursor-pointer h-10 lg:w-12 lg:h-12 bg-gray-700/50 hover:bg-gray-600/50 rounded-full flex items-center justify-center glass-effect relative group"
             >
+              <span
+                class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm px-4 py-2 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >Toggle Mute</span
+              >
               <svg
                 class="w-5 h-5 lg:w-6 lg:h-6 text-white"
                 fill="none"
@@ -145,8 +149,12 @@
 
             <button
               id="presentBtn"
-              class="control-button w-10 h-10 lg:w-12 lg:h-12 bg-blue-600/80 hover:bg-blue-500/80 rounded-full flex items-center justify-center glass-effect"
+              class="control-button cursor-pointer h-10 lg:w-12 lg:h-12 bg-blue-600/80 hover:bg-blue-500/80 rounded-full flex items-center justify-center glass-effect relative group"
             >
+              <span
+                class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm px-4 py-2 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >Share Screen</span
+              >
               <svg
                 class="w-5 h-5 lg:w-6 lg:h-6 text-white"
                 fill="none"
@@ -164,8 +172,12 @@
 
             <button
               id="streamBtn"
-              class="control-button w-10 h-10 lg:w-12 lg:h-12 bg-purple-600/80 hover:bg-purple-500/80 rounded-full flex items-center justify-center glass-effect"
+              class="control-button cursor-pointer h-10 lg:w-12 lg:h-12 bg-purple-600/80 hover:bg-purple-500/80 rounded-full flex items-center justify-center glass-effect relative group"
             >
+              <span
+                class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm px-4 py-2 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >Start Stream</span
+              >
               <svg
                 class="w-5 h-5 lg:w-6 lg:h-6 text-white"
                 fill="none"
@@ -182,9 +194,13 @@
             </button>
 
             <button
-              id="endCallBtn"
-              class="control-button w-10 h-10 lg:w-12 lg:h-12 bg-red-600/80 hover:bg-red-500/80 rounded-full flex items-center justify-center glass-effect"
+              id="shareBtn"
+              class="control-button cursor-pointer h-10 lg:w-12 lg:h-12 bg-red-600/80 hover:bg-red-500/80 rounded-full flex items-center justify-center glass-effect relative group"
             >
+              <span
+                class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm px-4 py-2 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >Share Link</span
+              >
               <svg
                 class="w-5 h-5 lg:w-6 lg:h-6 text-white"
                 fill="none"
@@ -195,7 +211,30 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 3l18 18"
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                ></path>
+              </svg>
+            </button>
+
+            <button
+              id="endCallBtn"
+              class="control-button cursor-pointer h-10 lg:w-12 lg:h-12 bg-red-700/80 hover:bg-red-600/80 rounded-full flex items-center justify-center relative group"
+            >
+              <span
+                class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm px-4 py-2 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >End Call</span
+              >
+              <svg
+                class="w-5 h-5 lg:w-6 lg:h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 16.2l3.5-3.5m0 0l3.5-3.5M9.5 12.7L6 9.2m3.5 3.5l3.5 3.5m5-12.3v14.1c0 2.3-1.8 4.2-4.1 4.2H6.1C3.8 21.2 2 19.3 2 17V6.1C2 3.8 3.8 2 6.1 2h8.3c2.3 0 4.1 1.8 4.1 4.2z"
                 ></path>
               </svg>
             </button>
@@ -259,7 +298,7 @@
         <div class="p-4 border-b border-gray-700/50 flex items-center justify-between">
           <h3 class="text-lg font-semibold">Chat</h3>
           <div class="flex items-center space-x-2">
-            <button
+            <!-- <button
               id="shareButton"
               class="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
             >
@@ -276,7 +315,7 @@
                   d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
                 ></path>
               </svg>
-            </button>
+            </button> -->
             <button
               id="toggleRight"
               class="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
