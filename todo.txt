@@ -1,6 +1,8 @@
 1. Socket work - done
 2. Video streaming work
-3. Audio channel work
+3. Audio channel work - 
+    - handle cases where user has denied permission to access microphone
+    - if the user has denied permission, handle mute/unmute status of the user
 4. Minor enhancements in functionality - 
     4.1. Allow users to rejoin a session.
         - Cache room id and user Id.

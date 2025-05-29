@@ -1,25 +1,33 @@
+// webrtc.ts
 import { Socket } from "socket.io-client";
-import { notyf } from "./index";
-import store from "./store";
 import { EVENTS } from "../../common/constants";
-import { updateUsersInLeftSidebar } from "./ui";
+import Store from "./store";
+import UIManager from "./uiManager";
+import { Notyf } from "notyf";
+
 export default class WebRTCManager {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private localStream: MediaStream | null = null;
   private socket: Socket;
+  private store: Store;
+  private uiManager: UIManager;
   private isMuted: boolean = false;
 
-  constructor(socket: Socket) {
+  constructor(socket: Socket, store: Store, uiManager: UIManager, _: Notyf) {
     this.socket = socket;
+    this.store = store;
+    this.uiManager = uiManager;
     this.setupSocketListeners();
   }
+
+  // ... (keep existing WebRTC methods but update to use store and uiManager)
 
   private setupSocketListeners(): void {
     // Handle signaling events
     this.socket.on(EVENTS.RECEIVE_WEBRTC_OFFER, async ({ from, offer }) => {
       console.log(`Received WebRTC offer from ${from}`);
 
-      const connection = store.room.members.find(member => member.socketId === from);
+      const connection = this.store.room.members.find(member => member.socketId === from);
       if (!connection) {
         console.error("Connection not found");
         return;
@@ -30,13 +38,13 @@ export default class WebRTCManager {
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       console.log(`Sending WebRTC answer to ${connection.id}`);
-      this.socket.emit(EVENTS.SEND_WEBRTC_ANSWER, { to: connection.id, answer, roomId: store.room.id });
+      this.socket.emit(EVENTS.SEND_WEBRTC_ANSWER, { to: connection.id, answer, roomId: this.store.room.id });
     });
 
     this.socket.on(EVENTS.RECEIVE_WEBRTC_ANSWER, async ({ from, answer }) => {
       console.log(`Received WebRTC answer from ${from}`);
 
-      const connection = store.room.members.find(member => member.socketId === from);
+      const connection = this.store.room.members.find(member => member.socketId === from);
       if (!connection) {
         console.error("Connection not found");
         return;
@@ -51,7 +59,7 @@ export default class WebRTCManager {
     this.socket.on(EVENTS.RECEIVE_WEBRTC_ICE_CANDIDATE, async ({ from, candidate }) => {
       console.log(`Received ICE candidate from ${from}`);
 
-      const connection = store.room.members.find(member => member.socketId === from);
+      const connection = this.store.room.members.find(member => member.socketId === from);
       if (!connection) {
         console.error("Connection not found");
         return;
@@ -69,7 +77,7 @@ export default class WebRTCManager {
       // Get microphone permission and stream
       this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      store.room.members.forEach(member => {
+      this.store.room.members.forEach(member => {
         if (member.socketId && member.socketId !== this.socket.id) {
           this.createPeerConnectionAndSendOffer(member.id);
         }
@@ -87,7 +95,7 @@ export default class WebRTCManager {
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
     console.log(`Sending WebRTC offer to ${userId}`);
-    this.socket.emit(EVENTS.SEND_WEBRTC_OFFER, { to: userId, offer, roomId: store.room.id });
+    this.socket.emit(EVENTS.SEND_WEBRTC_OFFER, { to: userId, offer, roomId: this.store.room.id });
   }
 
   private async createPeerConnection(userId: string): Promise<RTCPeerConnection> {
@@ -105,7 +113,7 @@ export default class WebRTCManager {
       });
     }
 
-    this.bindPeerConnectionListeners(peerConnection, userId)
+    this.bindPeerConnectionListeners(peerConnection, userId);
 
     return peerConnection;
   }
@@ -123,7 +131,7 @@ export default class WebRTCManager {
         this.socket.emit(EVENTS.SEND_WEBRTC_ICE_CANDIDATE, {
           to: userId,
           candidate: event.candidate,
-          roomId: store.room.id,
+          roomId: this.store.room.id,
         });
       }
     };
@@ -149,13 +157,13 @@ export default class WebRTCManager {
 
   toggleMute(): boolean {
     if (!this.localStream) {
-      console.warn("No local stream available");
+      this.uiManager.showNotification("You are not connected to any audio channel", "warning");
       return false;
     }
 
     const audioTracks = this.localStream.getAudioTracks();
     if (audioTracks.length === 0) {
-      console.warn("No audio tracks found");
+      this.uiManager.showNotification("No audio tracks found", "warning");
       return false;
     }
 
@@ -165,30 +173,28 @@ export default class WebRTCManager {
     });
 
     // Update local store first
-    store.room.members = store.room.members.map(member => {
-      if (member.id === store.user!.id) {
+    this.store.room.members = this.store.room.members.map(member => {
+      if (member.id === this.store.user!.id) {
         return {
           ...member,
-          isMuted: this.isMuted
+          isMuted: this.isMuted,
         };
       }
       return member;
     });
 
     // Update UI
-    updateUsersInLeftSidebar();
+    this.uiManager.updateUsersList();
 
     // Emit audio status change
     this.socket.emit(EVENTS.AUDIO_STATUS_CHANGED, {
-      roomId: store.room.id,
-      userId: store.user!.id,
-      isMuted: this.isMuted
+      roomId: this.store.room.id,
+      userId: this.store.user!.id,
+      isMuted: this.isMuted,
     });
 
-    return this.isMuted;
-  }
+    this.uiManager.showNotification(this.isMuted ? "You are now muted" : "You are now unmuted", "info");
 
-  isMicrophoneMuted(): boolean {
     return this.isMuted;
   }
 }
