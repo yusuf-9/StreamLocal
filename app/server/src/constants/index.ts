@@ -17,6 +17,10 @@ export const EVENTS = {
   RECEIVE_WEBRTC_ANSWER: "receive-webrtc-answer",
   SEND_WEBRTC_ICE_CANDIDATE: "send-webrtc-ice-candidate",
   RECEIVE_WEBRTC_ICE_CANDIDATE: "receive-webrtc-ice-candidate",
+  JOIN_AUDIO_CHAT: "join-audio-chat",
+  LEAVE_AUDIO_CHAT: "leave-audio-chat",
+  USER_JOINED_AUDIO_CHAT: "user-joined-audio-chat",
+  USER_LEFT_AUDIO_CHAT: "user-left-audio-chat",
 
   // audio status events
   AUDIO_STATUS_CHANGED: "audio-status-changed",

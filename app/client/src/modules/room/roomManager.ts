@@ -157,6 +157,15 @@ export default class RoomManager {
 
     elements.shareBtn.addEventListener("click", () => this.handleShareInviteLink());
     elements.endCallBtn.addEventListener("click", () => this.handleLeaveRoom());
+    elements.joinAudioChat.addEventListener("click", () => {
+      const isJoinedInAudioChat = this.store.room.members.find(member => member.id === this.store.user?.id)?.isJoinedInAudioChat;
+      if (isJoinedInAudioChat) {
+        this.webRTCManager?.stopAudioChat();
+        return;
+      }
+
+      this.webRTCManager?.startAudioChat();
+    });
   }
 
   private handleShareInviteLink() {

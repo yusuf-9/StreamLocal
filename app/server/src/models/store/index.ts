@@ -30,6 +30,7 @@ export default class Store {
             isHost: true,
             joinedAt: new Date().getTime(),
             isMuted: false,
+            isJoinedInAudioChat: false,
           },
         ],
       ]),
@@ -52,6 +53,7 @@ export default class Store {
       isHost: false,
       joinedAt: new Date().getTime(),
       isMuted: false,
+      isJoinedInAudioChat: false,
     });
     return userId;
   }

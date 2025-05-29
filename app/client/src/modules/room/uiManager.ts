@@ -65,6 +65,9 @@ export default class UIManager {
       endCallBtn: document.getElementById("endCallBtn")!,
       chatForm: document.getElementById("chatForm")!,
       chatInput: document.getElementById("chatInput")!,
+      muteBtn: document.getElementById("muteBtn")!,
+      joinAudioChat: document.getElementById("joinAudioChat")!,
+      joinAudioChatHoverText: document.getElementById("joinAudioChatHoverText")!,
     };
   }
 
@@ -160,7 +163,6 @@ export default class UIManager {
     if (overlay) overlay.remove();
   }
 
-
   public updateUsersList() {
     const elements = this.getUIElements();
     if (!elements.roomNameText || !elements.roomMembersCount || !elements.roomUsersList) return;
@@ -179,6 +181,7 @@ export default class UIManager {
     const colorGradient = userColorGradients[index % userColorGradients.length];
     const isUserActive = member.socketId.length > 0;
     const isMuted = member.isMuted;
+    const isJoinedInAudioChat = member.isJoinedInAudioChat;
 
     return `
       <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700/30 transition-colors">
@@ -195,7 +198,7 @@ export default class UIManager {
           <p class="text-xs text-gray-400">${member.isHost ? "Host" : ""}</p>
         </div>
         ${
-          isUserActive
+          isUserActive && isJoinedInAudioChat
             ? `
         <div class="flex items-center space-x-2">
           ${
@@ -286,7 +289,9 @@ export default class UIManager {
   }
 
   public updateMuteButton(isMuted: boolean) {
-    const muteButton = document.getElementById("muteBtn");
+    const elements = this.getUIElements();
+    const muteButton = elements.muteBtn;
+    
     if (!muteButton) return;
 
     if (isMuted) {
@@ -303,6 +308,24 @@ export default class UIManager {
           <div class="audio-bar" style="height: 6px"></div>
           <div class="audio-bar" style="height: 10px"></div>
         </div>`;
+    }
+  }
+
+  public audioChatControlButton(isUserJoinedInAudioChat: boolean) {
+    const elements = this.getUIElements();
+    const audioChatControlButton = elements.joinAudioChat;
+    const audioChatHoverText = elements.joinAudioChatHoverText;
+
+    if (!audioChatControlButton || !audioChatHoverText) return;
+
+    if (isUserJoinedInAudioChat) {
+      audioChatHoverText.textContent = "Leave Audio Chat";
+      audioChatControlButton.classList.add("bg-red-700", "hover:bg-red-600");
+      audioChatControlButton.classList.remove("bg-green-700", "hover:bg-green-600");
+    } else {
+      audioChatHoverText.textContent = "Join Audio Chat";
+      audioChatControlButton.classList.add("bg-green-700", "hover:bg-green-600");
+      audioChatControlButton.classList.remove("bg-red-700", "hover:bg-red-600");
     }
   }
 

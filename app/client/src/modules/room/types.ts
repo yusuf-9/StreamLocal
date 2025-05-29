@@ -19,6 +19,7 @@ export interface Member {
     isHost: boolean;
     joinedAt: number;
     isMuted: boolean;
+    isJoinedInAudioChat: boolean;
 }
 
 export interface Message {

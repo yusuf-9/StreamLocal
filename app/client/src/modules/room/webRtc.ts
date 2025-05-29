@@ -70,6 +70,44 @@ export default class WebRTCManager {
         await peerConnection.addIceCandidate(candidate);
       }
     });
+
+    this.socket.on(EVENTS.USER_JOINED_AUDIO_CHAT, ({ userId }) => {
+      console.log(`User ${userId} joined audio chat`);
+
+      const connection = this.store.room.members.find(member => member.id === userId);
+      if (!connection) {
+        console.error("Connection not found");
+        return;
+      }
+
+      this.store.room.members.forEach(member => {
+        if (member.id === userId) {
+          member.isJoinedInAudioChat = true;
+        }
+      });
+
+      this.uiManager.showNotification(connection.userName + " joined audio chat", "info");
+      this.uiManager.updateUsersList();
+    });
+
+    this.socket.on(EVENTS.USER_LEFT_AUDIO_CHAT, ({ userId }) => {
+      console.log(`User ${userId} left audio chat`);
+
+      const connection = this.store.room.members.find(member => member.id === userId);
+      if (!connection) {
+        console.error("Connection not found");
+        return;
+      }
+
+      this.store.room.members.forEach(member => {
+        if (member.id === userId) {
+          member.isJoinedInAudioChat = false;
+        }
+      });
+
+      this.uiManager.showNotification(`User ${connection.userName} left audio chat`, "warning");
+      this.uiManager.updateUsersList();
+    });
   }
 
   async startAudioChat(): Promise<void> {
@@ -82,6 +120,19 @@ export default class WebRTCManager {
           this.createPeerConnectionAndSendOffer(member.id);
         }
       });
+
+      this.store.room.members.forEach(member => {
+        if (member.id === this.store.user!.id) {
+          member.isJoinedInAudioChat = true;
+        }
+      });
+
+      this.uiManager.updateUsersList();
+      this.uiManager.audioChatControlButton(true);
+
+      this.uiManager.showNotification("Connected to audio chat", "success");
+
+      this.socket.emit(EVENTS.JOIN_AUDIO_CHAT, { roomId: this.store.room.id });
     } catch (error) {
       console.error("Error starting audio chat:", error);
       throw new Error(
@@ -153,6 +204,18 @@ export default class WebRTCManager {
     // Close all peer connections
     this.peerConnections.forEach(connection => connection.close());
     this.peerConnections.clear();
+
+    this.store.room.members.forEach(member => {
+      if (member.id === this.store.user!.id) {
+        member.isJoinedInAudioChat = false;
+      }
+    });
+
+    this.uiManager.updateUsersList();
+    this.uiManager.audioChatControlButton(false);
+    this.uiManager.showNotification("Disconnected from audio chat", "warning");
+
+    this.socket.emit(EVENTS.LEAVE_AUDIO_CHAT, { roomId: this.store.room.id });
   }
 
   toggleMute(): boolean {

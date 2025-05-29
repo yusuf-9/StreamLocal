@@ -160,6 +160,47 @@ export default class SocketModel {
         });
       });
 
+      socket.on(EVENTS.JOIN_AUDIO_CHAT, ({ roomId }) => {
+        const room = this.store.getRoom(roomId);
+        if (!room) {
+          socket.emit(EVENTS.ERROR, "Room not found");
+          return;
+        }
+
+        // Update the mute status in the store
+        const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
+        if (!sender) {
+          throw new Error("You are not in this room");
+        }
+
+        sender.isJoinedInAudioChat = true;
+
+        // Broadcast to all users in the room except sender
+        socket.broadcast.to(roomId).emit(EVENTS.USER_JOINED_AUDIO_CHAT, {
+          userId: sender.id,
+        });
+      });
+
+      socket.on(EVENTS.LEAVE_AUDIO_CHAT, ({ roomId }) => {
+        const room = this.store.getRoom(roomId);
+        if (!room) {
+          socket.emit(EVENTS.ERROR, "Room not found");
+          return;
+        }
+
+        const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
+        if (!sender) {
+          throw new Error("You are not in this room");
+        }
+
+        sender.isJoinedInAudioChat = false;
+
+        // Broadcast to all users in the room except sender
+        socket.broadcast.to(roomId).emit(EVENTS.USER_LEFT_AUDIO_CHAT, {
+          userId: sender.id,
+        });
+      });
+
       socket.on("disconnect", () => {
         console.log("Client disconnected");
         this.store.removeSocketConnection(socket.id);
