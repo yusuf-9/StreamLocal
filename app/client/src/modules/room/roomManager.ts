@@ -72,6 +72,17 @@ export default class RoomManager {
     users: any[];
   }> {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`);
+    if (!response.ok) {
+      let errorMessage = "Something went wrong";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (jsonError) {
+        // If JSON parsing fails, use the status text or default message
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
     return await response.json();
   }
 
@@ -157,7 +168,9 @@ export default class RoomManager {
     elements.shareBtn.addEventListener("click", () => this.handleShareInviteLink());
     elements.endCallBtn.addEventListener("click", () => this.handleLeaveRoom());
     elements.joinAudioChat.addEventListener("click", () => {
-      const isJoinedInAudioChat = this.store.room.members.find(member => member.id === this.store.user?.id)?.isJoinedInAudioChat;
+      const isJoinedInAudioChat = this.store.room.members.find(
+        member => member.id === this.store.user?.id
+      )?.isJoinedInAudioChat;
       if (isJoinedInAudioChat) {
         this.webRTCManager?.stopAudioChat();
         return;
