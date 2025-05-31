@@ -20,85 +20,65 @@ export class Server {
 
   private setupMiddleware(): void {
     // Handle static files from public folder
-    // const publicPath = path.join(__dirname, "../../public");
-    // this.app.use(express.static(publicPath));
+    const publicPath = path.join(__dirname, "../../../public/");
+    this.app.use(express.static(publicPath));
     this.app.use(express.json());
     this.app.use(cors());
   }
 
   private configureEndpoints(): void {
-    const router = Router();
+    const apiRouter = Router();
 
-    router.get("/", (req, res) => {
-      res.send("Hello World");
-    });
-
-    router.post("/create-room", async (req, res, next) => {
+    // API endpoints
+    apiRouter.post("/create-room", async (req, res, next) => {
       try {
         const { roomName, userName } = req.body;
 
-        // Validate required fields
         if (!roomName || !userName) {
           throw new CustomError(400, "Room name and user name are required");
         }
 
-        // Trim inputs
         const trimmedRoomName = roomName.trim();
         const trimmedUserName = userName.trim();
 
-        // Validate room name length
         if (trimmedRoomName.length < 3) {
           throw new CustomError(400, "Room name must be at least 3 characters long");
         }
 
-        // Validate user name length
         if (trimmedUserName.length < 3) {
           throw new CustomError(400, "User name must be at least 3 characters long");
         }
 
-        // Create the room
-        const [roomId, userId] = this.store.createRoom(roomName, trimmedUserName);
+        const [roomId, userId] = this.store.createRoom(trimmedRoomName, trimmedUserName);
 
-        res.status(201).json({
-          message: "Room created successfully",
-          roomId,
-          userId,
-        });
+        res.status(201).json({ message: "Room created successfully", roomId, userId });
       } catch (error) {
         next(error);
       }
     });
 
-    router.post("/join-room", (req, res, next) => {
+    apiRouter.post("/join-room", (req, res, next) => {
       try {
         const { roomId, userName } = req.body;
 
-        // Validate required fields
         if (!roomId || !userName) {
           throw new CustomError(400, "Room id and user name are required");
         }
 
-        // Validate user name length
         const trimmedUserName = userName.trim();
         if (trimmedUserName.length < 3) {
           throw new CustomError(400, "User name must be at least 3 characters long");
         }
 
-        // Create the room
         const userId = this.store.joinRoom(roomId, trimmedUserName);
 
-        // For now, just return success
-        res.status(201).json({
-          message: "Room joined successfully",
-          roomId,
-          userId,
-        });
+        res.status(201).json({ message: "Room joined successfully", roomId, userId });
       } catch (error) {
         next(error);
       }
     });
 
-    router.get("/room/:roomId", (req, res, next) => {
+    apiRouter.get("/room/:roomId", (req, res, next) => {
       try {
         const { roomId } = req.params;
         const room = this.store.getRoom(roomId);
@@ -118,8 +98,23 @@ export class Server {
       }
     });
 
-    // Mount all API routes under /api
-    this.app.use("/api", router);
+    // Mount API router at /api
+    this.app.use("/api", apiRouter);
+
+    // Serve static HTML files for root-level routes
+    const publicPath = path.join(__dirname, "../../public");
+
+    this.app.get("/", (req, res) => {
+      res.sendFile(path.join(publicPath, "index.html"));
+    });
+
+    this.app.get("/room", (req, res) => {
+      res.sendFile(path.join(publicPath, "room.html"));
+    });
+
+    this.app.use((req, res) => {
+      res.sendFile(path.join(publicPath, "index.html"));
+    });
   }
 
   private setupErrorHandling(): void {

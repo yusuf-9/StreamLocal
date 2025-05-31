@@ -7,7 +7,7 @@ import WebRTCManager from "./webRtc";
 import UIManager from "./uiManager";
 import Store from "./store";
 import type { Message, Member } from "./types";
-
+import CacheManager from "../../common/services/cacheManager";
 export default class RoomManager {
   private socket: Socket | null = null;
   private webRTCManager: WebRTCManager | null = null;
@@ -61,6 +61,9 @@ export default class RoomManager {
       members: roomData.users,
       messages: roomData.messages,
     });
+
+    CacheManager.setCachedRoomId(roomId);
+    CacheManager.setCachedUserId(userId);
   }
 
   private async fetchRoomData(roomId: string): Promise<{

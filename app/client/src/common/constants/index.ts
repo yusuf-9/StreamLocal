@@ -32,3 +32,8 @@ export const EVENTS = {
   AUDIO_STATUS_CHANGED: "audio-status-changed",
   USER_AUDIO_STATUS_CHANGED: "user-audio-status-changed",
 };
+
+export const LOCAL_STORAGE_KEYS = {
+  ROOM_ID: "roomId",
+  USER_ID: "userId",
+};
