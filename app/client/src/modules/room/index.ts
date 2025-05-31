@@ -1,6 +1,6 @@
 import RoomManager from "./roomManager";
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const roomManager = new RoomManager();
-  await roomManager.initialize();
+  roomManager.initialize();
 });

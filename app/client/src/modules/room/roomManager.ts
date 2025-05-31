@@ -95,10 +95,6 @@ export default class RoomManager {
           resolve(socketInstance);
         });
       });
-
-      socketInstance.on("connect_error", error => {
-        reject(error);
-      });
     });
   }
 
@@ -205,7 +201,7 @@ export default class RoomManager {
     console.error(error);
     const message = error instanceof Error ? error.message : "An unknown error occurred";
 
-    if (this.store.isRoomLoaded) {
+    if (!this.store.isRoomLoaded) {
       this.uiManager.showLoadingError("Failed to load room. Please try again.", message);
     } else {
       this.uiManager.showNotification(message, "error");

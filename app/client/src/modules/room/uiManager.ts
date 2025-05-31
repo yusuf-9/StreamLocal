@@ -43,10 +43,22 @@ export default class UIManager {
       this.updateLayout();
     });
 
-    elements.toggleLeft.addEventListener("click", () => this.store.toggleLeftSidebar());
-    elements.toggleRight.addEventListener("click", () => this.store.toggleRightSidebar());
-    elements.floatingLeftToggle.addEventListener("click", () => this.store.toggleLeftSidebar());
-    elements.floatingRightToggle.addEventListener("click", () => this.store.toggleRightSidebar());
+    elements.toggleLeft.addEventListener("click", () => {
+      this.store.toggleLeftSidebar()
+      this.updateLayout()
+    });
+    elements.toggleRight.addEventListener("click", () => {
+      this.store.toggleRightSidebar();
+      this.updateLayout()
+    })
+    elements.floatingLeftToggle.addEventListener("click", () => {
+      this.store.toggleLeftSidebar();
+      this.updateLayout()
+    })
+    elements.floatingRightToggle.addEventListener("click", () => {
+      this.store.toggleRightSidebar();
+      this.updateLayout()
+    })
   }
 
   public getUIElements() {
@@ -168,9 +180,8 @@ export default class UIManager {
     if (!elements.roomNameText || !elements.roomMembersCount || !elements.roomUsersList) return;
 
     elements.roomNameText.textContent = this.store.room.name;
-    elements.roomMembersCount.textContent = `${this.store.room.members.length} participant${
-      this.store.room.members.length === 1 ? "" : "s"
-    }`;
+    elements.roomMembersCount.textContent = `${this.store.room.members.length} participant${this.store.room.members.length === 1 ? "" : "s"
+      }`;
 
     elements.roomUsersList.innerHTML = this.store.room.members
       .map((member, index) => this.createUserListItem(member, index))
@@ -189,34 +200,31 @@ export default class UIManager {
           <div class="w-8 h-8 rounded-full bg-gradient-to-r ${colorGradient} flex items-center justify-center text-white font-medium">
             ${member.userName[0]}
           </div>
-          <div class="absolute -bottom-1 -right-1 w-3 h-3 ${
-            isUserActive ? "bg-green-500" : "bg-gray-500"
-          } border-2 border-gray-800 rounded-full"></div>
+          <div class="absolute -bottom-1 -right-1 w-3 h-3 ${isUserActive ? "bg-green-500" : "bg-gray-500"
+      } border-2 border-gray-800 rounded-full"></div>
         </div>
         <div class="flex-1">
           <p class="text-sm font-medium">${member.userName}</p>
           <p class="text-xs text-gray-400">${member.isHost ? "Host" : ""}</p>
         </div>
-        ${
-          isUserActive && isJoinedInAudioChat
-            ? `
+        ${isUserActive && isJoinedInAudioChat
+        ? `
         <div class="flex items-center space-x-2">
-          ${
-            isMuted
-              ? `<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          ${isMuted
+          ? `<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
                   <line x1="17" y1="7" x2="7" y2="17" stroke="currentColor" stroke-width="2"></line>
                 </svg>`
-              : `<div class="audio-bars">
+          : `<div class="audio-bars">
                   <div class="audio-bar" style="height: 8px"></div>
                   <div class="audio-bar" style="height: 12px"></div>
                   <div class="audio-bar" style="height: 6px"></div>
                   <div class="audio-bar" style="height: 10px"></div>
                 </div>`
-          }
-        </div>`
-            : ""
         }
+        </div>`
+        : ""
+      }
       </div>
     `;
   }
@@ -291,7 +299,7 @@ export default class UIManager {
   public updateMuteButton(isMuted: boolean) {
     const elements = this.getUIElements();
     const muteButton = elements.muteBtn;
-    
+
     if (!muteButton) return;
 
     if (isMuted) {
