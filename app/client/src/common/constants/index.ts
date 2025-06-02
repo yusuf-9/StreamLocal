@@ -27,6 +27,10 @@ export const EVENTS = {
   LEAVE_AUDIO_CHAT: "leave-audio-chat",
   USER_JOINED_AUDIO_CHAT: "user-joined-audio-chat",
   USER_LEFT_AUDIO_CHAT: "user-left-audio-chat",
+  START_VIDEO_STREAM: "start-video-stream",
+  END_VIDEO_STREAM: "end-video-stream",
+  VIDEO_STREAM_STARTED: "video-stream-started",
+  VIDEO_STREAM_ENDED: "video-stream-ended",
 
   // audio status events
   AUDIO_STATUS_CHANGED: "audio-status-changed",

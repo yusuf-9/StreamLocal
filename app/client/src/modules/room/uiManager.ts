@@ -73,13 +73,18 @@ export default class UIManager {
       roomMembersCount: document.getElementById("roomMembersCount")!,
       roomUsersList: document.getElementById("roomUsersList")!,
       chatMessages: document.getElementById("chatMessages")!,
-      shareBtn: document.getElementById("shareBtn")!,
-      endCallBtn: document.getElementById("endCallBtn")!,
+      shareControlBtn: document.getElementById("shareControlBtn")!,
+      endCallControlBtn: document.getElementById("endCallControlBtn")!,
       chatForm: document.getElementById("chatForm")!,
       chatInput: document.getElementById("chatInput")!,
-      muteBtn: document.getElementById("muteBtn")!,
-      joinAudioChat: document.getElementById("joinAudioChat")!,
-      joinAudioChatHoverText: document.getElementById("joinAudioChatHoverText")!,
+      muteControlBtn: document.getElementById("muteControlBtn")!,
+      joinAudioChatControlBtn: document.getElementById("joinAudioChatControlBtn")!,
+      joinAudioChatControlBtnHoverText: document.getElementById("joinAudioChatControlBtnHoverText")!,
+      streamScreenControlBtn: document.getElementById("streamScreenControlBtn")!,
+      streamVideoFileControlBtn: document.getElementById("streamVideoFileControlBtn")!,
+      emptyVideoContainer: document.getElementById("emptyVideoContainer")!,
+      videoPlayerContainer: document.getElementById("videoPlayerContainer")!,
+      videoPlayer: document.getElementById("videoPlayer")!,
     };
   }
 
@@ -298,7 +303,7 @@ export default class UIManager {
 
   public updateMuteButton(isMuted: boolean) {
     const elements = this.getUIElements();
-    const muteButton = elements.muteBtn;
+    const muteButton = elements.muteControlBtn;
 
     if (!muteButton) return;
 
@@ -321,8 +326,8 @@ export default class UIManager {
 
   public audioChatControlButton(isUserJoinedInAudioChat: boolean) {
     const elements = this.getUIElements();
-    const audioChatControlButton = elements.joinAudioChat;
-    const audioChatHoverText = elements.joinAudioChatHoverText;
+    const audioChatControlButton = elements.joinAudioChatControlBtn;
+    const audioChatHoverText = elements.joinAudioChatControlBtnHoverText;
 
     if (!audioChatControlButton || !audioChatHoverText) return;
 
@@ -413,4 +418,49 @@ export default class UIManager {
       loadingOverlay.remove();
     }
   }
+
+  public hideStreamingPlaceholder() {
+    const elements = this.getUIElements();
+    const streamingPlaceholder = elements.emptyVideoContainer;
+
+    if (streamingPlaceholder) {
+      streamingPlaceholder.classList.add("hidden");
+    }
+  }
+
+  public showStreamingPlaceholder() {
+    const elements = this.getUIElements();
+    const streamingPlaceholder = elements.emptyVideoContainer;
+
+    if (streamingPlaceholder) {
+      streamingPlaceholder.classList.remove("hidden");
+    }
+  }
+
+  public showVideoPlayer() {
+    const elements = this.getUIElements();
+    const videoPlayerContainer = elements.videoPlayerContainer;
+
+    if (videoPlayerContainer) {
+      videoPlayerContainer.classList.remove("hidden");
+    }
+  }
+
+  public hideVideoPlayer() {
+    const elements = this.getUIElements();
+    const videoPlayerContainer = elements.videoPlayerContainer;
+
+    if (videoPlayerContainer) {
+      videoPlayerContainer.classList.add("hidden");
+    }
+  }
+
+  public isVideoPlayerOpen() {
+    const elements = this.getUIElements();
+    const videoPlayerContainer = elements.videoPlayerContainer;
+    const placeholder = elements.emptyVideoContainer;
+
+    return !videoPlayerContainer.classList.contains("hidden") && placeholder.classList.contains("hidden");
+  }
 }
+

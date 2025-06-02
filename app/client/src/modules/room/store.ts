@@ -89,9 +89,11 @@ export default class Store {
   }
 
   setStreams(streams: Stream[]) {
+    // Dedupe stream objects using id
+    const dedupedStreams = [...new Map(streams.map(item => [item.id, item])).values()];
     this._room = {
       ...this._room,
-      streams
-    }
+      streams: dedupedStreams,
+    };
   }
 }

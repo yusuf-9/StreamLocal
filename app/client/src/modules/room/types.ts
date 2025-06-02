@@ -33,5 +33,5 @@ export interface Message {
 export interface Stream {
     id: string;
     userId: Member['id'];
-    type: "audio-chat" | "video-stream" | "video-stream-audio";
+    type: "audio-chat" | "video-stream"
 }

@@ -7,7 +7,8 @@ import { Notyf } from "notyf";
 
 export default class WebRTCManager {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
-  private localStream: MediaStream | null = null;
+  private localMicrophoneStream: MediaStream | null = null;
+  private localVideoStream: MediaStream | null = null;
   private socket: Socket;
   private store: Store;
   private uiManager: UIManager;
@@ -18,9 +19,7 @@ export default class WebRTCManager {
     this.store = store;
     this.uiManager = uiManager;
     this.setupSocketListeners();
-
   }
-  // ... (keep existing WebRTC methods but update to use store and uiManager)
 
   private setupSocketListeners(): void {
     // Handle signaling events
@@ -88,11 +87,8 @@ export default class WebRTCManager {
 
       this.uiManager.showNotification(connection.userName + " joined audio chat", "info");
       this.uiManager.updateUsersList();
-      this.store.setStreams([
-        ...this.store.room.streams,
-        stream
-      ])
-      console.log({ streams: this.store.room.streams })
+      this.store.setStreams([...this.store.room.streams, stream]);
+      console.log({ streams: this.store.room.streams });
     });
 
     this.socket.on(EVENTS.USER_LEFT_AUDIO_CHAT, ({ userId }) => {
@@ -113,21 +109,65 @@ export default class WebRTCManager {
       this.uiManager.showNotification(`User ${connection.userName} left audio chat`, "warning");
       this.uiManager.updateUsersList();
       this.store.setStreams(
-        this.store.room.streams.filter((stream) => {
+        this.store.room.streams.filter(stream => {
           if (stream.userId === userId && stream.type === "audio-chat") {
-            return false
+            return false;
           }
-          return true
+          return true;
         })
-      )
-      console.log({ streams: this.store.room.streams })
+      );
+      console.log({ streams: this.store.room.streams });
+    });
+
+    this.socket.on(EVENTS.VIDEO_STREAM_STARTED, ({ userId, stream }) => {
+      console.log(`User ${userId} started video stream`, stream);
+
+      const connection = this.store.room.members.find(member => member.id === userId);
+      if (!connection) {
+        console.error("Connection not found");
+        return;
+      }
+
+      this.store.setStreams([...this.store.room.streams, stream]);
+
+      this.uiManager.showVideoPlayer();
+      this.uiManager.hideStreamingPlaceholder();
+      this.uiManager.showNotification(`${connection.userName} started video stream`, "info");
+    });
+
+    this.socket.on(EVENTS.VIDEO_STREAM_ENDED, ({ userId }) => {
+      console.log(`User ${userId} ended video stream`);
+
+      const connection = this.store.room.members.find(member => member.id === userId);
+      if (!connection) {
+        console.error("Connection not found");
+        return;
+      }
+
+      this.store.setStreams(
+        this.store.room.streams.filter(stream => {
+          if (stream.userId === userId && stream.type === "video-stream") {
+            return false;
+          }
+          return true;
+        })
+      );
+
+      const videoPlayer = this.uiManager.getUIElements().videoPlayer as HTMLVideoElement;
+      if (videoPlayer) {
+        videoPlayer.srcObject = null;
+      }
+
+      this.uiManager.showStreamingPlaceholder();
+      this.uiManager.hideVideoPlayer();
+      this.uiManager.showNotification(`${connection.userName} ended video stream`, "warning");
     });
   }
 
   async startAudioChat(): Promise<void> {
     try {
       // Get microphone permission and stream
-      this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.localMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       this.store.room.members.forEach(member => {
         if (member.socketId && member.socketId !== this.socket.id) {
@@ -146,17 +186,15 @@ export default class WebRTCManager {
 
       this.uiManager.showNotification("Connected to audio chat", "success");
 
-      this.socket.emit(EVENTS.JOIN_AUDIO_CHAT, { roomId: this.store.room.id, streamId: this.localStream.id });
-      this.store.setStreams(
-        [
-          ...this.store.room.streams,
-          {
-            id: this.localStream.id,
-            type: "audio-chat",
-            userId: this.store.user!.id
-          }
-        ]
-      )
+      this.socket.emit(EVENTS.JOIN_AUDIO_CHAT, { roomId: this.store.room.id, streamId: this.localMicrophoneStream.id });
+      this.store.setStreams([
+        ...this.store.room.streams,
+        {
+          id: this.localMicrophoneStream.id,
+          type: "audio-chat",
+          userId: this.store.user!.id,
+        },
+      ]);
     } catch (error) {
       console.error("Error starting audio chat:", error);
       throw new Error(
@@ -182,9 +220,16 @@ export default class WebRTCManager {
     this.peerConnections.set(userId, peerConnection);
 
     // Add local stream tracks to the connection
-    if (this.localStream) {
-      this.localStream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, this.localStream!);
+    if (this.localMicrophoneStream) {
+      this.localMicrophoneStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, this.localMicrophoneStream!);
+      });
+    }
+
+    if (this.localVideoStream) {
+      console.log("adding video stream tracks to peer connection");
+      this.localVideoStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, this.localVideoStream!);
       });
     }
 
@@ -197,7 +242,30 @@ export default class WebRTCManager {
     // Handle incoming streams
     peerConnection.ontrack = event => {
       const remoteStream = event.streams[0];
-      this.handleRemoteStream(userId, remoteStream);
+
+      const stream = this.store.room.streams.find(stream => stream.id === remoteStream.id);
+
+      if (!stream) {
+        console.error("Stream not found");
+        this.uiManager.showNotification("Unknown stream received", "error");
+        return;
+      }
+
+      if (stream.type === "video-stream") {
+        console.log("video stream received");
+        const isVideoPlayerOpen = this.uiManager.isVideoPlayerOpen();
+        if (!isVideoPlayerOpen) {
+          this.uiManager.showVideoPlayer();
+          this.uiManager.hideStreamingPlaceholder();
+        }
+        if (isVideoPlayerOpen) {
+          this.startVideoPlayer(remoteStream);
+        }
+      }
+
+      if (stream.type === "audio-chat") {
+        this.handleRemoteStream(userId, remoteStream);
+      }
     };
 
     peerConnection.onicecandidate = event => {
@@ -222,8 +290,8 @@ export default class WebRTCManager {
 
   stopAudioChat(): void {
     // Stop local stream
-    this.localStream?.getTracks().forEach(track => track.stop());
-    this.localStream = null;
+    this.localMicrophoneStream?.getTracks().forEach(track => track.stop());
+    this.localMicrophoneStream = null;
 
     // Close all peer connections
     this.peerConnections.forEach(connection => connection.close());
@@ -243,20 +311,20 @@ export default class WebRTCManager {
     this.store.setStreams(
       this.store.room.streams.filter(stream => {
         if (stream.userId === this.store.user!.id && stream.type === "audio-chat") {
-          return false
+          return false;
         }
-        return true
+        return true;
       })
-    )
+    );
   }
 
   toggleMute(): boolean {
-    if (!this.localStream) {
+    if (!this.localMicrophoneStream) {
       this.uiManager.showNotification("You are not connected to any audio channel", "warning");
       return false;
     }
 
-    const audioTracks = this.localStream.getAudioTracks();
+    const audioTracks = this.localMicrophoneStream.getAudioTracks();
     if (audioTracks.length === 0) {
       this.uiManager.showNotification("No audio tracks found", "warning");
       return false;
@@ -291,5 +359,93 @@ export default class WebRTCManager {
     this.uiManager.showNotification(this.isMuted ? "You are now muted" : "You are now unmuted", "info");
 
     return this.isMuted;
+  }
+
+  async startScreenSharing() {
+    try {
+      // Request screen sharing stream
+      this.localVideoStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+      this.uiManager.hideStreamingPlaceholder();
+      this.uiManager.showVideoPlayer();
+      this.startVideoPlayer(this.localVideoStream);
+
+      this.store.room.members.forEach(member => {
+        const isNotMe = member.id !== this.store.user!.id;
+        const isNotConnected = !this.peerConnections.has(member.id);
+        if (isNotMe && isNotConnected) {
+          console.log("creating peer connection for streaming video");
+          this.createPeerConnectionAndSendOffer(member.id);
+        }
+      });
+
+      this.socket.emit(EVENTS.START_VIDEO_STREAM, { roomId: this.store.room.id, streamId: this.localVideoStream.id });
+      this.store.setStreams([
+        ...this.store.room.streams,
+        {
+          id: this.localVideoStream.id,
+          type: "video-stream",
+          userId: this.store.user!.id,
+        },
+      ]);
+
+      this.uiManager.showNotification("Screen sharing started", "success");
+
+      // Handle stream stop
+      const videoTrack = this.localVideoStream?.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.onended = () => {
+          this.stopVideoStream();
+        };
+      }
+    } catch (error) {
+      console.error("Error starting screen share:", error);
+      this.uiManager.showNotification(
+        "Failed to start screen sharing: " + (error instanceof Error ? error.message : "An unknown error occurred"),
+        "error"
+      );
+    }
+  }
+
+  private startVideoPlayer(stream: MediaStream) {
+    const elements = this.uiManager.getUIElements();
+    const videoPlayer = elements.videoPlayer as HTMLVideoElement;
+
+    // Get the video element and set the stream
+    if (videoPlayer) {
+      videoPlayer.srcObject = stream;
+      videoPlayer.play();
+    }
+  }
+
+  private stopVideoStream() {
+    this.socket.emit(EVENTS.END_VIDEO_STREAM, { roomId: this.store.room.id, streamId: this.localVideoStream?.id });
+
+    this.localVideoStream?.getTracks().forEach(track => track.stop());
+    this.localVideoStream = null;
+
+    this.store.setStreams(
+      this.store.room.streams.filter(stream => {
+        if (stream.id === this.localVideoStream?.id && stream.type === "video-stream") {
+          return false;
+        }
+        return true;
+      })
+    );
+
+    const elements = this.uiManager.getUIElements();
+    const videoPlayer = elements.videoPlayer as HTMLVideoElement;
+
+    videoPlayer.srcObject = null;
+
+    this.uiManager.showStreamingPlaceholder();
+    this.uiManager.hideVideoPlayer();
+    this.uiManager.showNotification("Screen sharing has ended", "info");
+  }
+
+  startVideoFileSharing(): void {
+    console.log("startVideoFileSharing");
   }
 }

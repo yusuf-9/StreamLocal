@@ -61,7 +61,7 @@ export default class RoomManager {
       id: roomId,
       members: roomData.users,
       messages: roomData.messages,
-      streams: roomData.streams
+      streams: roomData.streams,
     });
 
     CacheManager.setCachedRoomId(roomId);
@@ -72,7 +72,7 @@ export default class RoomManager {
     name: string;
     messages: Message[];
     users: Member[];
-    streams: Stream[]
+    streams: Stream[];
   }> {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`);
     if (!response.ok) {
@@ -114,7 +114,7 @@ export default class RoomManager {
 
   private bindSocketListeners() {
     if (!this.socket) return;
-
+    
     this.socket.on(EVENTS.ERROR, (error: string | undefined) => {
       this.uiManager.showNotification(error ?? "Failed to perform last action", "error");
     });
@@ -130,9 +130,7 @@ export default class RoomManager {
       if (!user) return;
 
       this.store.updateRoomMember(userId, { socketId: "" });
-      this.store.setStreams(
-        this.store.room.streams.filter((stream) => stream.userId !== userId)
-      )
+      this.store.setStreams(this.store.room.streams.filter(stream => stream.userId !== userId));
       this.uiManager.updateUsersList();
       this.uiManager.showNotification(`${user.userName} left`, "warning");
     });
@@ -171,9 +169,9 @@ export default class RoomManager {
       (elements.chatInput as HTMLInputElement).value = "";
     });
 
-    elements.shareBtn.addEventListener("click", () => this.handleShareInviteLink());
-    elements.endCallBtn.addEventListener("click", () => this.handleLeaveRoom());
-    elements.joinAudioChat.addEventListener("click", () => {
+    elements.shareControlBtn.addEventListener("click", () => this.handleShareInviteLink());
+    elements.endCallControlBtn.addEventListener("click", () => this.handleLeaveRoom());
+    elements.joinAudioChatControlBtn.addEventListener("click", () => {
       const isJoinedInAudioChat = this.store.room.members.find(
         member => member.id === this.store.user?.id
       )?.isJoinedInAudioChat;
@@ -184,6 +182,29 @@ export default class RoomManager {
 
       this.webRTCManager?.startAudioChat();
     });
+
+    elements.streamScreenControlBtn.addEventListener("click", () => {
+      if (!this.checkIsHost()) {
+        this.uiManager.showNotification("You are not the host of this room. Only host can stream screen", "error");
+        return;
+      }
+
+      this.webRTCManager?.startScreenSharing();
+    });
+
+    elements.streamVideoFileControlBtn.addEventListener("click", () => {
+      if (!this.checkIsHost()) {
+        this.uiManager.showNotification("You are not the host of this room. Only host can stream video file", "error");
+        return;
+      }
+
+      this.webRTCManager?.startVideoFileSharing();
+    });
+  }
+
+  private checkIsHost() {
+    const host = this.store.room.members.find(member => member.isHost);
+    return host?.id === this.store.user?.id;
   }
 
   private handleShareInviteLink() {
@@ -203,11 +224,14 @@ export default class RoomManager {
   }
 
   private handleLeaveRoom() {
+    if (!confirm("Are you sure you want to leave the room?")) {
+      return;
+    }
     window.location.href = "/";
   }
 
   private bindWebRTCControls() {
-    const muteButton = document.getElementById("muteBtn") as HTMLButtonElement;
+    const muteButton = document.getElementById("muteControlBtn") as HTMLButtonElement;
     if (!muteButton || !this.webRTCManager) return;
 
     muteButton.addEventListener("click", () => {
