@@ -90,6 +90,7 @@ export class Server {
           name: room.name,
           users: Array.from(room.connections.values()),
           messages: room.messages,
+          streams: room.streams
         };
 
         res.status(200).json(roomData);

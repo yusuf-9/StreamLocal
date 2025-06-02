@@ -6,8 +6,9 @@ import "notyf/notyf.min.css";
 import WebRTCManager from "./webRtc";
 import UIManager from "./uiManager";
 import Store from "./store";
-import type { Message, Member } from "./types";
+import type { Message, Member, Stream } from "./types";
 import CacheManager from "../../common/services/cacheManager";
+
 export default class RoomManager {
   private socket: Socket | null = null;
   private webRTCManager: WebRTCManager | null = null;
@@ -60,6 +61,7 @@ export default class RoomManager {
       id: roomId,
       members: roomData.users,
       messages: roomData.messages,
+      streams: roomData.streams
     });
 
     CacheManager.setCachedRoomId(roomId);
@@ -68,8 +70,9 @@ export default class RoomManager {
 
   private async fetchRoomData(roomId: string): Promise<{
     name: string;
-    messages: any[];
-    users: any[];
+    messages: Message[];
+    users: Member[];
+    streams: Stream[]
   }> {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`);
     if (!response.ok) {
@@ -127,6 +130,9 @@ export default class RoomManager {
       if (!user) return;
 
       this.store.updateRoomMember(userId, { socketId: "" });
+      this.store.setStreams(
+        this.store.room.streams.filter((stream) => stream.userId !== userId)
+      )
       this.uiManager.updateUsersList();
       this.uiManager.showNotification(`${user.userName} left`, "warning");
     });

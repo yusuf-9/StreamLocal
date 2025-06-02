@@ -18,8 +18,8 @@ export default class WebRTCManager {
     this.store = store;
     this.uiManager = uiManager;
     this.setupSocketListeners();
-  }
 
+  }
   // ... (keep existing WebRTC methods but update to use store and uiManager)
 
   private setupSocketListeners(): void {
@@ -71,8 +71,8 @@ export default class WebRTCManager {
       }
     });
 
-    this.socket.on(EVENTS.USER_JOINED_AUDIO_CHAT, ({ userId }) => {
-      console.log(`User ${userId} joined audio chat`);
+    this.socket.on(EVENTS.USER_JOINED_AUDIO_CHAT, ({ userId, stream }) => {
+      console.log(`User ${userId} joined audio chat`, stream);
 
       const connection = this.store.room.members.find(member => member.id === userId);
       if (!connection) {
@@ -88,6 +88,11 @@ export default class WebRTCManager {
 
       this.uiManager.showNotification(connection.userName + " joined audio chat", "info");
       this.uiManager.updateUsersList();
+      this.store.setStreams([
+        ...this.store.room.streams,
+        stream
+      ])
+      console.log({ streams: this.store.room.streams })
     });
 
     this.socket.on(EVENTS.USER_LEFT_AUDIO_CHAT, ({ userId }) => {
@@ -107,6 +112,15 @@ export default class WebRTCManager {
 
       this.uiManager.showNotification(`User ${connection.userName} left audio chat`, "warning");
       this.uiManager.updateUsersList();
+      this.store.setStreams(
+        this.store.room.streams.filter((stream) => {
+          if (stream.userId === userId && stream.type === "audio-chat") {
+            return false
+          }
+          return true
+        })
+      )
+      console.log({ streams: this.store.room.streams })
     });
   }
 
@@ -132,7 +146,17 @@ export default class WebRTCManager {
 
       this.uiManager.showNotification("Connected to audio chat", "success");
 
-      this.socket.emit(EVENTS.JOIN_AUDIO_CHAT, { roomId: this.store.room.id });
+      this.socket.emit(EVENTS.JOIN_AUDIO_CHAT, { roomId: this.store.room.id, streamId: this.localStream.id });
+      this.store.setStreams(
+        [
+          ...this.store.room.streams,
+          {
+            id: this.localStream.id,
+            type: "audio-chat",
+            userId: this.store.user!.id
+          }
+        ]
+      )
     } catch (error) {
       console.error("Error starting audio chat:", error);
       throw new Error(
@@ -216,6 +240,14 @@ export default class WebRTCManager {
     this.uiManager.showNotification("Disconnected from audio chat", "warning");
 
     this.socket.emit(EVENTS.LEAVE_AUDIO_CHAT, { roomId: this.store.room.id });
+    this.store.setStreams(
+      this.store.room.streams.filter(stream => {
+        if (stream.userId === this.store.user!.id && stream.type === "audio-chat") {
+          return false
+        }
+        return true
+      })
+    )
   }
 
   toggleMute(): boolean {

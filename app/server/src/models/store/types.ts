@@ -9,6 +9,7 @@ export interface Room {
     createdAt: Date;
     connections: Map<string, Connection>;
     messages: Message[];
+    streams: Array<Stream>
 }
 
 export interface Connection {
@@ -26,4 +27,10 @@ export interface Message {
     content: string;
     createdAt: number;
     senderId: string;
+}
+
+export interface Stream {
+    id: string;
+    userId: Connection['id'];
+    type: "audio-chat" | "video-stream" | "video-stream-audio";
 }

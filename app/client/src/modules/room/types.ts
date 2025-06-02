@@ -4,6 +4,7 @@ export interface RoomState {
         name: string;
         members: Member[];
         messages: Message[];
+        streams: Stream[];
     };
     isMobile: boolean;
     isLeftSidebarOpen: boolean;
@@ -27,4 +28,10 @@ export interface Message {
     content: string;
     senderId: string;
     createdAt: number;
+}
+
+export interface Stream {
+    id: string;
+    userId: Member['id'];
+    type: "audio-chat" | "video-stream" | "video-stream-audio";
 }

@@ -15,7 +15,7 @@ export default class Store {
   public createRoom(roomName: string, userName: string): [roomId: string, hostId: string] {
     const roomId = generateUUID();
     const hostId = generateUUID();
-    
+
     const room: Room = {
       id: roomId,
       name: roomName,
@@ -35,6 +35,7 @@ export default class Store {
         ],
       ]),
       messages: [],
+      streams: []
     };
     this.data.rooms.set(roomId, room);
     return [roomId, hostId];

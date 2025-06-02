@@ -4,7 +4,7 @@ import { Express } from "express";
 import http from "http";
 import Store from "../store";
 import { EVENTS } from "../../constants";
-import { Connection, Message } from "../store/types";
+import { Connection, Message, Stream } from "../store/types";
 
 export default class SocketModel {
   private io: SocketServer;
@@ -57,7 +57,7 @@ export default class SocketModel {
               }));
 
             socket.emit(EVENTS.USER_AUDIO_STATUS_CHANGED, mutedUsers);
-            
+
             callback(socketConnection);
             socket.broadcast.to(payload.roomId).emit(EVENTS.USER_JOINED, socketConnection);
           }
@@ -160,7 +160,7 @@ export default class SocketModel {
         });
       });
 
-      socket.on(EVENTS.JOIN_AUDIO_CHAT, ({ roomId }) => {
+      socket.on(EVENTS.JOIN_AUDIO_CHAT, ({ roomId, streamId }) => {
         const room = this.store.getRoom(roomId);
         if (!room) {
           socket.emit(EVENTS.ERROR, "Room not found");
@@ -173,11 +173,19 @@ export default class SocketModel {
           throw new Error("You are not in this room");
         }
 
+        const streamMetaData = {
+          id: streamId,
+          userId: sender.id,
+          type: "audio-chat"
+        }
+
         sender.isJoinedInAudioChat = true;
+        room.streams.push(streamMetaData as Stream)
 
         // Broadcast to all users in the room except sender
         socket.broadcast.to(roomId).emit(EVENTS.USER_JOINED_AUDIO_CHAT, {
           userId: sender.id,
+          stream: streamMetaData
         });
       });
 
@@ -194,6 +202,12 @@ export default class SocketModel {
         }
 
         sender.isJoinedInAudioChat = false;
+        room.streams = room.streams.filter((stream) => {
+          if (stream.userId === sender.id && stream.type === "audio-chat") {
+            return false
+          }
+          return true
+        });
 
         // Broadcast to all users in the room except sender
         socket.broadcast.to(roomId).emit(EVENTS.USER_LEFT_AUDIO_CHAT, {
@@ -211,6 +225,9 @@ export default class SocketModel {
             if (connection.socketId === socket.id) {
               // Remove user from room connections
               connection.socketId = "";
+
+              // Remove the streams associated with the user
+              room.streams = room.streams.filter(stream => stream.userId !== userId)
 
               // Notify room members that user left
               socket.broadcast.to(room.id).emit(EVENTS.USER_LEFT, userId);

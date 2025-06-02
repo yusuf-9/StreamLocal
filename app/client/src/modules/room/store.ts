@@ -1,4 +1,4 @@
-import type { Member, Message, RoomState } from "./types";
+import type { Member, Message, RoomState, Stream } from "./types";
 
 export default class Store {
   private _room: RoomState['room'];
@@ -14,6 +14,7 @@ export default class Store {
       name: '',
       members: [],
       messages: [],
+      streams: []
     };
     this._user = null;
     this._isMobile = window.innerWidth < 1024;
@@ -50,7 +51,7 @@ export default class Store {
   }
 
   updateRoomMember(userId: string, updates: Partial<Member>) {
-    this._room.members = this._room.members.map(member => 
+    this._room.members = this._room.members.map(member =>
       member.id === userId ? { ...member, ...updates } : member
     );
   }
@@ -85,5 +86,12 @@ export default class Store {
 
   setMobileRightSidebarOpen(isOpen: boolean) {
     this._isRightSidebarOpen = isOpen;
+  }
+
+  setStreams(streams: Stream[]) {
+    this._room = {
+      ...this._room,
+      streams
+    }
   }
 }
