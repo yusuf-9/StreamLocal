@@ -125,7 +125,9 @@ export default class RoomManager {
     this.socket.on(EVENTS.USER_JOINED, (data: Member) => {
       this.store.addRoomMember(data);
       this.uiManager.updateUsersList();
-      this.videoStreamManager?.createPeerConnectionAndSendOffer(data.id);
+      if (this.store.room.isVideoStreamActive) {
+        this.videoStreamManager?.createPeerConnectionAndSendOffer(data.id);
+      }
       this.uiManager.showNotification(`${data.userName} joined`, "info");
     });
 
