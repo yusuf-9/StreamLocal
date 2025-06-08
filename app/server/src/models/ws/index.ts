@@ -53,7 +53,7 @@ export default class SocketModel {
               .filter(conn => conn.isMuted)
               .map(conn => ({
                 userId: conn.id,
-                isMuted: conn.isMuted
+                isMuted: conn.isMuted,
               }));
 
             socket.emit(EVENTS.USER_AUDIO_STATUS_CHANGED, mutedUsers);
@@ -140,102 +140,181 @@ export default class SocketModel {
         )
       );
 
-      socket.on(EVENTS.AUDIO_STATUS_CHANGED, ({ roomId, userId, isMuted }) => {
-        const room = this.store.getRoom(roomId);
-        if (!room) {
-          socket.emit(EVENTS.ERROR, "Room not found");
-          return;
-        }
-
-        // Update the mute status in the store
-        const connection = room.connections.get(userId);
-        if (connection) {
-          connection.isMuted = isMuted;
-        }
-
-        // Broadcast to all users in the room except sender
-        socket.broadcast.to(roomId).emit(EVENTS.USER_AUDIO_STATUS_CHANGED, {
-          userId,
-          isMuted
-        });
-      });
-
-      socket.on(EVENTS.JOIN_AUDIO_CHAT, ({ roomId, streamId }) => {
-        const room = this.store.getRoom(roomId);
-        if (!room) {
-          socket.emit(EVENTS.ERROR, "Room not found");
-          return;
-        }
-
-        // Update the mute status in the store
-        const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
-        if (!sender) {
-          throw new Error("You are not in this room");
-        }
-
-        const streamMetaData = {
-          id: streamId,
-          userId: sender.id,
-          type: "audio-chat"
-        }
-
-        sender.isJoinedInAudioChat = true;
-        room.streams.push(streamMetaData as Stream)
-
-        // Broadcast to all users in the room except sender
-        socket.broadcast.to(roomId).emit(EVENTS.USER_JOINED_AUDIO_CHAT, {
-          userId: sender.id,
-          stream: streamMetaData
-        });
-      });
-
-      socket.on(EVENTS.LEAVE_AUDIO_CHAT, ({ roomId }) => {
-        const room = this.store.getRoom(roomId);
-        if (!room) {
-          socket.emit(EVENTS.ERROR, "Room not found");
-          return;
-        }
-
-        const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
-        if (!sender) {
-          throw new Error("You are not in this room");
-        }
-
-        sender.isJoinedInAudioChat = false;
-        room.streams = room.streams.filter((stream) => {
-          if (stream.userId === sender.id && stream.type === "audio-chat") {
-            return false
-          }
-          return true
-        });
-
-        // Broadcast to all users in the room except sender
-        socket.broadcast.to(roomId).emit(EVENTS.USER_LEFT_AUDIO_CHAT, {
-          userId: sender.id,
-        });
-      });
-
-      socket.on("disconnect", () => {
-        console.log("Client disconnected");
-        this.store.removeSocketConnection(socket.id);
-
-        // Find room that has this socket connection
-        for (const room of this.store.getRooms()) {
-          for (const [userId, connection] of room.connections) {
-            if (connection.socketId === socket.id) {
-              // Remove user from room connections
-              connection.socketId = "";
-
-              // Remove the streams associated with the user
-              room.streams = room.streams.filter(stream => stream.userId !== userId)
-
-              // Notify room members that user left
-              socket.broadcast.to(room.id).emit(EVENTS.USER_LEFT, userId);
+      socket.on(
+        EVENTS.AUDIO_STATUS_CHANGED,
+        this.createErrorBoundary(
+          socket,
+          ({ roomId, userId, isMuted }: { roomId: string; userId: string; isMuted: boolean }) => {
+            const room = this.store.getRoom(roomId);
+            if (!room) {
+              socket.emit(EVENTS.ERROR, "Room not found");
               return;
             }
+
+            // Update the mute status in the store
+            const connection = room.connections.get(userId);
+            if (connection) {
+              connection.isMuted = isMuted;
+            }
+
+            // Broadcast to all users in the room except sender
+            socket.broadcast.to(roomId).emit(EVENTS.USER_AUDIO_STATUS_CHANGED, {
+              userId,
+              isMuted,
+            });
           }
-        }
-      });
+        )
+      );
+
+      socket.on(
+        EVENTS.JOIN_AUDIO_CHAT,
+        this.createErrorBoundary(socket, ({ roomId, streamId }: { roomId: string; streamId: string }) => {
+          const room = this.store.getRoom(roomId);
+          if (!room) {
+            socket.emit(EVENTS.ERROR, "Room not found");
+            return;
+          }
+
+          // Update the mute status in the store
+          const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
+          if (!sender) {
+            throw new Error("You are not in this room");
+          }
+
+          const streamMetaData = {
+            id: streamId,
+            userId: sender.id,
+            type: "audio-chat",
+          };
+
+          sender.isJoinedInAudioChat = true;
+          this.store.setStreams([...this.store.getRoom(roomId)!.streams, streamMetaData as Stream], roomId);
+
+          // Broadcast to all users in the room except sender
+          socket.broadcast.to(roomId).emit(EVENTS.USER_JOINED_AUDIO_CHAT, {
+            userId: sender.id,
+            stream: streamMetaData,
+          });
+        })
+      );
+
+      socket.on(
+        EVENTS.LEAVE_AUDIO_CHAT,
+        this.createErrorBoundary(socket, ({ roomId }: { roomId: string }) => {
+          const room = this.store.getRoom(roomId);
+          if (!room) {
+            socket.emit(EVENTS.ERROR, "Room not found");
+            return;
+          }
+
+          const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
+          if (!sender) {
+            throw new Error("You are not in this room");
+          }
+
+          sender.isJoinedInAudioChat = false;
+          this.store.setStreams(
+            room.streams.filter(stream => {
+              if (stream.userId === sender.id && stream.type === "audio-chat") {
+                return false;
+              }
+              return true;
+            }),
+            roomId
+          );
+
+          // Broadcast to all users in the room except sender
+          socket.broadcast.to(roomId).emit(EVENTS.USER_LEFT_AUDIO_CHAT, {
+            userId: sender.id,
+          });
+        })
+      );
+
+      socket.on(
+        EVENTS.START_VIDEO_STREAM,
+        this.createErrorBoundary(socket, ({ roomId, streamId }: { roomId: string; streamId: string }) => {
+          const room = this.store.getRoom(roomId);
+          if (!room) {
+            socket.emit(EVENTS.ERROR, "Room not found");
+            return;
+          }
+
+          const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
+          if (!sender) {
+            throw new Error("You are not in this room");
+          }
+
+          const streamMetaData = {
+            id: streamId,
+            userId: sender.id,
+            type: "video-stream",
+          };
+
+          this.store.setStreams([...this.store.getRoom(roomId)!.streams, streamMetaData as Stream], roomId);
+
+          // Broadcast to all users in the room except sender
+          socket.broadcast.to(roomId).emit(EVENTS.VIDEO_STREAM_STARTED, {
+            userId: sender.id,
+            stream: streamMetaData,
+          });
+        })
+      );
+
+      socket.on(
+        EVENTS.END_VIDEO_STREAM,
+        this.createErrorBoundary(socket, ({ roomId, streamId }: { roomId: string; streamId: string }) => {
+          console.log("END_VIDEO_STREAM", { roomId, streamId });
+          const room = this.store.getRoom(roomId);
+          if (!room) {
+            socket.emit(EVENTS.ERROR, "Room not found");
+            return;
+          }
+
+          const sender = Array.from(room.connections.values()).find(conn => conn.socketId === socket.id);
+          if (!sender) {
+            throw new Error("You are not in this room");
+          }
+
+          this.store.setStreams(
+            room.streams.filter(stream => stream.id !== streamId),
+            roomId
+          );
+
+          // Broadcast to all users in the room except sender
+          socket.broadcast.to(roomId).emit(EVENTS.VIDEO_STREAM_ENDED, {
+            userId: sender.id,
+          });
+        })
+      );
+
+      socket.on(
+        "disconnect",
+        this.createErrorBoundary(socket, () => {
+          console.log("Client disconnected");
+          this.store.removeSocketConnection(socket.id);
+
+          // Find room that has this socket connection
+          for (const room of this.store.getRooms()) {
+            for (const [userId, connection] of room.connections) {
+              if (connection.socketId === socket.id) {
+                // Remove user from room connections
+                connection.socketId = "";
+                connection.isJoinedInAudioChat = false
+
+                // Remove the streams associated with the user
+                this.store.setStreams(
+                  room.streams.filter(stream => stream.userId !== userId),
+                  room.id
+                );
+
+                // Notify room members that user left
+                socket.broadcast.to(room.id).emit(EVENTS.USER_LEFT, userId);
+                return;
+              }
+            }
+          }
+        })
+      );
     });
   }
 
@@ -257,4 +336,5 @@ export default class SocketModel {
   public getSocketServer(): SocketServer {
     return this.io;
   }
+
 }

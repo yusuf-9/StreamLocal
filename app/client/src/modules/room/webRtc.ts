@@ -1,4 +1,3 @@
-// webrtc.ts
 import { Socket } from "socket.io-client";
 import { EVENTS } from "../../common/constants";
 import Store from "./store";
@@ -169,10 +168,32 @@ export default class WebRTCManager {
       // Get microphone permission and stream
       this.localMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      this.store.room.members.forEach(member => {
-        if (member.socketId && member.socketId !== this.socket.id) {
+      this.store.room.members.forEach(async member => {
+        const isMe = member.id === this.store.user!.id;
+        const isConnected = member.socketId.length > 0;
+        const isPeerJoinedInAudioChat = member.isJoinedInAudioChat;
+        if (isMe || !isConnected || !isPeerJoinedInAudioChat) return;
+
+        const peerConnection = this.peerConnections.get(member.id);
+        if (!peerConnection) {
+          console.log("creating peer connection for audio chat");
           this.createPeerConnectionAndSendOffer(member.id);
+          return;
         }
+
+        this.localMicrophoneStream?.getTracks().forEach(track => {
+          peerConnection.addTrack(track, this.localMicrophoneStream!);
+        });
+
+        // 🔁 Renegotiate!
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        this.socket.emit(EVENTS.SEND_WEBRTC_OFFER, {
+          to: member.id,
+          offer,
+          roomId: this.store.room.id,
+        });
       });
 
       this.store.room.members.forEach(member => {
@@ -203,6 +224,15 @@ export default class WebRTCManager {
     }
   }
 
+  async joinRTCConnectionPool() {
+    const connectionPromises = this.store.room.members.map(async member => {
+      if (member.socketId && member.id !== this.store.user!.id) {
+        return await this.createPeerConnectionAndSendOffer(member.id);
+      }
+    });
+    await Promise.all(connectionPromises);
+  }
+
   private async createPeerConnectionAndSendOffer(userId: string): Promise<void> {
     const peerConnection = await this.createPeerConnection(userId);
     const offer = await peerConnection.createOffer();
@@ -216,11 +246,13 @@ export default class WebRTCManager {
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     };
 
+    const user = this.store.room.members.find(member => member.id === userId);
     const peerConnection = new RTCPeerConnection(configuration);
     this.peerConnections.set(userId, peerConnection);
 
     // Add local stream tracks to the connection
-    if (this.localMicrophoneStream) {
+    if (this.localMicrophoneStream && user?.isJoinedInAudioChat) {
+      console.log("adding audio stream tracks to peer connection");
       this.localMicrophoneStream.getTracks().forEach(track => {
         peerConnection.addTrack(track, this.localMicrophoneStream!);
       });
@@ -241,12 +273,13 @@ export default class WebRTCManager {
   private bindPeerConnectionListeners(peerConnection: RTCPeerConnection, userId: string): void {
     // Handle incoming streams
     peerConnection.ontrack = event => {
+      console.log("ontrack event", event);
       const remoteStream = event.streams[0];
 
       const stream = this.store.room.streams.find(stream => stream.id === remoteStream.id);
 
       if (!stream) {
-        console.error("Stream not found");
+        console.error("Recieved unknown stream");
         this.uiManager.showNotification("Unknown stream received", "error");
         return;
       }
@@ -258,13 +291,12 @@ export default class WebRTCManager {
           this.uiManager.showVideoPlayer();
           this.uiManager.hideStreamingPlaceholder();
         }
-        if (isVideoPlayerOpen) {
-          this.startVideoPlayer(remoteStream);
-        }
+        this.startVideoPlayer(remoteStream);
       }
 
       if (stream.type === "audio-chat") {
-        this.handleRemoteStream(userId, remoteStream);
+        console.log("audio stream received");
+        this.playAudioStream(userId, remoteStream);
       }
     };
 
@@ -278,9 +310,16 @@ export default class WebRTCManager {
         });
       }
     };
+
+    peerConnection.onnegotiationneeded = async () => {
+      console.log("negotiationneeded event");
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      this.socket.emit(EVENTS.SEND_WEBRTC_OFFER, { to: userId, offer, roomId: this.store.room.id });
+    };
   }
 
-  private handleRemoteStream(userId: string, stream: MediaStream): void {
+  private playAudioStream(userId: string, stream: MediaStream): void {
     // Create and play audio element for the remote stream
     const audioElement = new Audio();
     audioElement.srcObject = stream;
@@ -289,13 +328,19 @@ export default class WebRTCManager {
   }
 
   stopAudioChat(): void {
+    this.localMicrophoneStream?.getTracks().forEach(track => {
+      this.peerConnections.forEach(connection => {
+        const sender = connection.getSenders().find(sender => sender.track?.id === track.id);
+        if (sender) {
+          console.log("removing track", track.id);
+          connection.removeTrack(sender);
+        }
+      });
+    });
+
     // Stop local stream
     this.localMicrophoneStream?.getTracks().forEach(track => track.stop());
     this.localMicrophoneStream = null;
-
-    // Close all peer connections
-    this.peerConnections.forEach(connection => connection.close());
-    this.peerConnections.clear();
 
     this.store.room.members.forEach(member => {
       if (member.id === this.store.user!.id) {
@@ -320,7 +365,7 @@ export default class WebRTCManager {
 
   toggleMute(): boolean {
     if (!this.localMicrophoneStream) {
-      this.uiManager.showNotification("You are not connected to any audio channel", "warning");
+      this.uiManager.showNotification("You are not connected to the audio chat", "warning");
       return false;
     }
 
@@ -372,12 +417,36 @@ export default class WebRTCManager {
       this.uiManager.showVideoPlayer();
       this.startVideoPlayer(this.localVideoStream);
 
-      this.store.room.members.forEach(member => {
-        const isNotMe = member.id !== this.store.user!.id;
-        const isNotConnected = !this.peerConnections.has(member.id);
-        if (isNotMe && isNotConnected) {
+      this.store.room.members.forEach(async member => {
+        const isMe = member.id === this.store.user!.id;
+        const isConnected = member.socketId.length > 0;
+        if (isMe || !isConnected) return;
+
+        const isConnectedToAudioChat = this.peerConnections.has(member.id);
+        if (!isConnectedToAudioChat) {
           console.log("creating peer connection for streaming video");
           this.createPeerConnectionAndSendOffer(member.id);
+          return;
+        }
+
+        const peerConnection = this.peerConnections.get(member.id);
+        if (peerConnection) {
+          console.log("adding video stream tracks to existing peer connection");
+
+          // Add new video tracks
+          this.localVideoStream?.getTracks().forEach(track => {
+            peerConnection.addTrack(track, this.localVideoStream!);
+          });
+
+          // 🔁 Renegotiate!
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+
+          this.socket.emit(EVENTS.SEND_WEBRTC_OFFER, {
+            to: member.id,
+            offer,
+            roomId: this.store.room.id,
+          });
         }
       });
 
@@ -415,6 +484,7 @@ export default class WebRTCManager {
 
     // Get the video element and set the stream
     if (videoPlayer) {
+      console.log("playing stream");
       videoPlayer.srcObject = stream;
       videoPlayer.play();
     }
@@ -447,5 +517,14 @@ export default class WebRTCManager {
 
   startVideoFileSharing(): void {
     console.log("startVideoFileSharing");
+  }
+
+  public closeRTCConnection(connectionId: string) {
+    const connection = this.peerConnections.get(connectionId);
+    if (connection) {
+      console.log("closing RTC connection", connectionId);
+      connection.close();
+      this.peerConnections.delete(connectionId);
+    }
   }
 }

@@ -38,7 +38,8 @@ export default class RoomManager {
       this.bindSocketListeners();
       this.bindUIHandlers();
 
-      await this.webRTCManager.startAudioChat();
+      await this.webRTCManager.joinRTCConnectionPool()
+      // await this.webRTCManager.startAudioChat();
       this.bindWebRTCControls();
     } catch (error) {
       this.handleInitializationError(error);
@@ -114,7 +115,7 @@ export default class RoomManager {
 
   private bindSocketListeners() {
     if (!this.socket) return;
-    
+
     this.socket.on(EVENTS.ERROR, (error: string | undefined) => {
       this.uiManager.showNotification(error ?? "Failed to perform last action", "error");
     });
@@ -133,6 +134,7 @@ export default class RoomManager {
       this.store.setStreams(this.store.room.streams.filter(stream => stream.userId !== userId));
       this.uiManager.updateUsersList();
       this.uiManager.showNotification(`${user.userName} left`, "warning");
+      this.webRTCManager?.closeRTCConnection(userId)
     });
 
     this.socket.on(EVENTS.RECEIVE_MESSAGE, (message: Message) => {

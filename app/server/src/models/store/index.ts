@@ -1,4 +1,4 @@
-import { Room, Store as StoreType, Connection, Message } from "./types";
+import { Room, Store as StoreType, Connection, Message, Stream } from "./types";
 import CustomError from "../error";
 import { generateUUID } from "../../utils";
 
@@ -108,5 +108,16 @@ export default class Store {
     };
     room.messages.push(message);
     return message;
+  }
+  
+  setStreams(streams: Stream[], roomId: string) {
+    const room = this.data.rooms.get(roomId);
+    if (!room) {
+      throw new CustomError(404, "Room not found");
+    }
+
+    // Dedupe stream objects using id
+    const dedupedStreams = [...new Map(streams.map(item => [item.id, item])).values()];
+    room.streams = dedupedStreams
   }
 }

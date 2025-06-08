@@ -1,6 +1,6 @@
 import { QUERY_PARAM_KEYS } from "../../common/constants";
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   loadRoomForm();
   bindAnimations();
 });
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function bindAnimations() {
   // Smooth scrolling for navigation links
   document.querySelectorAll('a[href^="#"]').forEach((anchor: Element) => {
-    (anchor as HTMLAnchorElement).addEventListener("click", function (e: MouseEvent) {
+    (anchor as HTMLAnchorElement).addEventListener("click", function(e: MouseEvent) {
       e.preventDefault();
       const href = (this as HTMLAnchorElement).getAttribute("href");
       if (href) {
@@ -75,6 +75,7 @@ async function handleCreateRoom(e: SubmitEvent) {
   // Add loading state
   const form = e.target as HTMLFormElement;
   const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+  button.disabled = true;
   button.innerHTML = `
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -121,7 +122,7 @@ async function handleCreateRoom(e: SubmitEvent) {
 
 async function handleJoinRoom(e: SubmitEvent) {
   e.preventDefault();
-  
+
   // Reset error text
   const errorText = document.getElementById("errorText") as HTMLDivElement;
   errorText.textContent = "";
@@ -151,6 +152,7 @@ async function handleJoinRoom(e: SubmitEvent) {
   // Add loading state
   const form = e.target as HTMLFormElement;
   const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+  button.disabled = true;
   button.innerHTML = `
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
