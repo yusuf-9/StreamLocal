@@ -1,2 +1,2 @@
 # StreamLocal
-A free streaming app with the streaming features of discord nitro ;)
+Stream local video files at 1080p/60hz.
