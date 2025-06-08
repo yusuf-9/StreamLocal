@@ -5,6 +5,7 @@ export interface RoomState {
         members: Member[];
         messages: Message[];
         streams: Stream[];
+        isVideoStreamActive: boolean;
     };
     isMobile: boolean;
     isLeftSidebarOpen: boolean;

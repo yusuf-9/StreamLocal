@@ -14,7 +14,8 @@ export default class Store {
       name: '',
       members: [],
       messages: [],
-      streams: []
+      streams: [],
+      isVideoStreamActive: false
     };
     this._user = null;
     this._isMobile = window.innerWidth < 1024;

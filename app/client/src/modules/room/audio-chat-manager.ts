@@ -1,11 +1,10 @@
-// webrtc.ts
 import { Socket } from "socket.io-client";
 import { EVENTS } from "../../common/constants";
 import Store from "./store";
 import UIManager from "./uiManager";
 import { Notyf } from "notyf";
 
-export default class WebRTCManager {
+export default class AudioChatManager {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private localStream: MediaStream | null = null;
   private socket: Socket;
@@ -18,13 +17,11 @@ export default class WebRTCManager {
     this.store = store;
     this.uiManager = uiManager;
     this.setupSocketListeners();
-
   }
-  // ... (keep existing WebRTC methods but update to use store and uiManager)
 
   private setupSocketListeners(): void {
     // Handle signaling events
-    this.socket.on(EVENTS.RECEIVE_WEBRTC_OFFER, async ({ from, offer }) => {
+    this.socket.on(EVENTS.RECEIVE_WEBRTC_OFFER_FOR_AUDIO_CHAT, async ({ from, offer }) => {
       console.log(`Received WebRTC offer from ${from}`);
 
       const connection = this.store.room.members.find(member => member.socketId === from);
@@ -38,10 +35,14 @@ export default class WebRTCManager {
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       console.log(`Sending WebRTC answer to ${connection.id}`);
-      this.socket.emit(EVENTS.SEND_WEBRTC_ANSWER, { to: connection.id, answer, roomId: this.store.room.id });
+      this.socket.emit(EVENTS.SEND_WEBRTC_ANSWER_FOR_AUDIO_CHAT, {
+        to: connection.id,
+        answer,
+        roomId: this.store.room.id,
+      });
     });
 
-    this.socket.on(EVENTS.RECEIVE_WEBRTC_ANSWER, async ({ from, answer }) => {
+    this.socket.on(EVENTS.RECEIVE_WEBRTC_ANSWER_FOR_AUDIO_CHAT, async ({ from, answer }) => {
       console.log(`Received WebRTC answer from ${from}`);
 
       const connection = this.store.room.members.find(member => member.socketId === from);
@@ -56,7 +57,7 @@ export default class WebRTCManager {
       }
     });
 
-    this.socket.on(EVENTS.RECEIVE_WEBRTC_ICE_CANDIDATE, async ({ from, candidate }) => {
+    this.socket.on(EVENTS.RECEIVE_WEBRTC_ICE_CANDIDATE_FOR_AUDIO_CHAT, async ({ from, candidate }) => {
       console.log(`Received ICE candidate from ${from}`);
 
       const connection = this.store.room.members.find(member => member.socketId === from);
@@ -88,11 +89,8 @@ export default class WebRTCManager {
 
       this.uiManager.showNotification(connection.userName + " joined audio chat", "info");
       this.uiManager.updateUsersList();
-      this.store.setStreams([
-        ...this.store.room.streams,
-        stream
-      ])
-      console.log({ streams: this.store.room.streams })
+      this.store.setStreams([...this.store.room.streams, stream]);
+      console.log({ streams: this.store.room.streams });
     });
 
     this.socket.on(EVENTS.USER_LEFT_AUDIO_CHAT, ({ userId }) => {
@@ -113,14 +111,14 @@ export default class WebRTCManager {
       this.uiManager.showNotification(`User ${connection.userName} left audio chat`, "warning");
       this.uiManager.updateUsersList();
       this.store.setStreams(
-        this.store.room.streams.filter((stream) => {
+        this.store.room.streams.filter(stream => {
           if (stream.userId === userId && stream.type === "audio-chat") {
-            return false
+            return false;
           }
-          return true
+          return true;
         })
-      )
-      console.log({ streams: this.store.room.streams })
+      );
+      console.log({ streams: this.store.room.streams });
     });
   }
 
@@ -130,7 +128,9 @@ export default class WebRTCManager {
       this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       this.store.room.members.forEach(member => {
-        if (member.socketId && member.socketId !== this.socket.id) {
+        const isConnectedToAudioChat = member.isJoinedInAudioChat;
+        const isConnected = member.socketId.length > 0;
+        if (member.id !== this.store.user!.id && isConnectedToAudioChat && isConnected) {
           this.createPeerConnectionAndSendOffer(member.id);
         }
       });
@@ -147,16 +147,14 @@ export default class WebRTCManager {
       this.uiManager.showNotification("Connected to audio chat", "success");
 
       this.socket.emit(EVENTS.JOIN_AUDIO_CHAT, { roomId: this.store.room.id, streamId: this.localStream.id });
-      this.store.setStreams(
-        [
-          ...this.store.room.streams,
-          {
-            id: this.localStream.id,
-            type: "audio-chat",
-            userId: this.store.user!.id
-          }
-        ]
-      )
+      this.store.setStreams([
+        ...this.store.room.streams,
+        {
+          id: this.localStream.id,
+          type: "audio-chat",
+          userId: this.store.user!.id,
+        },
+      ]);
     } catch (error) {
       console.error("Error starting audio chat:", error);
       throw new Error(
@@ -170,7 +168,7 @@ export default class WebRTCManager {
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
     console.log(`Sending WebRTC offer to ${userId}`);
-    this.socket.emit(EVENTS.SEND_WEBRTC_OFFER, { to: userId, offer, roomId: this.store.room.id });
+    this.socket.emit(EVENTS.SEND_WEBRTC_OFFER_FOR_AUDIO_CHAT, { to: userId, offer, roomId: this.store.room.id });
   }
 
   private async createPeerConnection(userId: string): Promise<RTCPeerConnection> {
@@ -197,18 +195,37 @@ export default class WebRTCManager {
     // Handle incoming streams
     peerConnection.ontrack = event => {
       const remoteStream = event.streams[0];
-      this.handleRemoteStream(userId, remoteStream);
+      console.log("ontrack event", event);
+
+      const stream = this.store.room.streams.find(stream => stream.id === remoteStream.id);
+
+      if (!stream) {
+        console.error("Recieved unknown stream");
+        this.uiManager.showNotification("Unknown stream received", "error");
+        return;
+      }
+
+      if (stream.type === "audio-chat") {
+        this.handleRemoteStream(userId, remoteStream);
+      }
     };
 
     peerConnection.onicecandidate = event => {
       if (event?.candidate) {
         console.log(`Sending ICE candidate to ${userId}`);
-        this.socket.emit(EVENTS.SEND_WEBRTC_ICE_CANDIDATE, {
+        this.socket.emit(EVENTS.SEND_WEBRTC_ICE_CANDIDATE_FOR_AUDIO_CHAT, {
           to: userId,
           candidate: event.candidate,
           roomId: this.store.room.id,
         });
       }
+    };
+
+    peerConnection.onnegotiationneeded = async () => {
+      console.log("negotiationneeded event");
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      this.socket.emit(EVENTS.SEND_WEBRTC_OFFER_FOR_AUDIO_CHAT, { to: userId, offer, roomId: this.store.room.id });
     };
   }
 
@@ -243,11 +260,11 @@ export default class WebRTCManager {
     this.store.setStreams(
       this.store.room.streams.filter(stream => {
         if (stream.userId === this.store.user!.id && stream.type === "audio-chat") {
-          return false
+          return false;
         }
-        return true
+        return true;
       })
-    )
+    );
   }
 
   toggleMute(): boolean {
@@ -291,5 +308,14 @@ export default class WebRTCManager {
     this.uiManager.showNotification(this.isMuted ? "You are now muted" : "You are now unmuted", "info");
 
     return this.isMuted;
+  }
+
+  public closeRTCConnection(connectionId: string) {
+    const connection = this.peerConnections.get(connectionId);
+    if (connection) {
+      console.log("closing RTC connection", connectionId);
+      connection.close();
+      this.peerConnections.delete(connectionId);
+    }
   }
 }
