@@ -1,8 +1,13 @@
 1. Socket work - done
-2. Video streaming work
+2. Video streaming work - 
+    - fix bugs with screen sharing
+    - fix unmounting of video when host leaves the room
+    - simulate network disturbances and fix issues
+    - fix the UI to be more mobile friendly
+    - delete rooms when they get empty (or, alternatively, use a real db, or set limits on no. of active rooms and members in a room)
 3. Audio channel work - done
 4. Documentation
-5. Deployment
+5. Deployment - done
 
 Optional:
 1. Minor enhancements in functionality - 
@@ -13,9 +18,3 @@ Optional:
         - Play a sound when a user joins/leaves the room
 2. Minor enhancements in UI/UX
 
----
-
-Notes:
-- Signal stream meta data to all users on a user joining a stream
-- Send all stream ids to the user on joining a room
-- remove the stream on client-side when a user leaves the room or the audio channel
