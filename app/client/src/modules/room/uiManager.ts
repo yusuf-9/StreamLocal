@@ -18,6 +18,9 @@ const userColorGradients = [
 export default class UIManager {
   private store: Store;
   private notyf: Notyf;
+  private notificationDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
+  private lastNotificationTime = 0;
+  private readonly DEBOUNCE_DELAY = 500;
 
   constructor(store: Store, notyf: Notyf) {
     this.store = store;
@@ -365,7 +368,39 @@ export default class UIManager {
     }
   }
 
+  private playNotificationSound(type: "success" | "info" | "error" | "warning") {
+    // Clear any existing timeout
+    if (this.notificationDebounceTimeout) {
+      clearTimeout(this.notificationDebounceTimeout);
+    }
+
+    // Check if enough time has passed since last notification
+    const now = Date.now();
+    if (now - this.lastNotificationTime < this.DEBOUNCE_DELAY) {
+      // If not enough time has passed, schedule the sound for later
+      this.notificationDebounceTimeout = setTimeout(() => {
+        this.playSound(type);
+      }, this.DEBOUNCE_DELAY);
+    } else {
+      // If enough time has passed, play the sound immediately
+      this.playSound(type);
+    }
+    
+    this.lastNotificationTime = now;
+  }
+
+  private playSound(type: "success" | "info" | "error" | "warning") {
+    const audio = new Audio(
+      type === "success" || type === "info" 
+        ? "/positive-alert.mp3" 
+        : "/negative-alert.mp3"
+    );
+    audio.play().catch(err => console.warn("Could not play notification sound:", err));
+  }
+
   public showNotification(message: string, type: "success" | "info" | "error" | "warning") {
+    this.playNotificationSound(type);
+
     if (type === "success") {
       this.notyf.success({
         message,
