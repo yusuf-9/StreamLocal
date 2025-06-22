@@ -125,7 +125,7 @@ export default class RoomManager {
     this.socket.on(EVENTS.USER_JOINED, (data: Member) => {
       this.store.addRoomMember(data);
       this.uiManager.updateUsersList();
-      if (this.store.room.isVideoStreamActive) {
+      if (this.store.isVideoStreamActive) {
         this.videoStreamManager?.createPeerConnectionAndSendOffer(data.id);
       }
       this.uiManager.showNotification(`${data.userName} joined`, "info");
@@ -137,6 +137,11 @@ export default class RoomManager {
 
       this.store.updateRoomMember(userId, { socketId: "" });
       this.store.setStreams(this.store.room.streams.filter(stream => stream.userId !== userId));
+
+      if (!this.store.isVideoStreamActive) {
+        this.videoStreamManager?.stopVideoStream();
+      }
+
       this.uiManager.updateUsersList();
       this.uiManager.showNotification(`${user.userName} left`, "warning");
       this.audioChatManager?.closeRTCConnection(userId);
@@ -197,7 +202,7 @@ export default class RoomManager {
         return;
       }
 
-      if (this.store.room.isVideoStreamActive) {
+      if (this.store.isVideoStreamActive) {
         this.videoStreamManager?.stopStream();
         return;
       }

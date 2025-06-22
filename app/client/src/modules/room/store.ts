@@ -1,7 +1,7 @@
 import type { Member, Message, RoomState, Stream } from "./types";
 
 export default class Store {
-  private _room: RoomState['room'];
+  private _room: RoomState["room"];
   private _user: Member | null;
   private _isMobile: boolean;
   private _isLeftSidebarOpen: boolean;
@@ -10,12 +10,11 @@ export default class Store {
 
   constructor() {
     this._room = {
-      id: '',
-      name: '',
+      id: "",
+      name: "",
       members: [],
       messages: [],
       streams: [],
-      isVideoStreamActive: false
     };
     this._user = null;
     this._isMobile = window.innerWidth < 1024;
@@ -25,15 +24,30 @@ export default class Store {
   }
 
   // Getters
-  get room(): RoomState['room'] { return this._room; }
-  get user(): Member | null { return this._user; }
-  get isMobile(): boolean { return this._isMobile; }
-  get isLeftSidebarOpen(): boolean { return this._isLeftSidebarOpen; }
-  get isRightSidebarOpen(): boolean { return this._isRightSidebarOpen; }
-  get isRoomLoaded(): boolean { return this._isRoomLoaded; }
+  get room(): RoomState["room"] {
+    return this._room;
+  }
+  get user(): Member | null {
+    return this._user;
+  }
+  get isMobile(): boolean {
+    return this._isMobile;
+  }
+  get isLeftSidebarOpen(): boolean {
+    return this._isLeftSidebarOpen;
+  }
+  get isRightSidebarOpen(): boolean {
+    return this._isRightSidebarOpen;
+  }
+  get isRoomLoaded(): boolean {
+    return this._isRoomLoaded;
+  }
+  get isVideoStreamActive(): boolean {
+    return this._room.streams.some(stream => stream.type === "video-stream");
+  }
 
   // Setters
-  setRoom(room: Partial<RoomState['room']>) {
+  setRoom(room: Partial<RoomState["room"]>) {
     this._room = { ...this._room, ...room };
   }
 
@@ -43,8 +57,9 @@ export default class Store {
 
   setRoomMembers(members: Member[]) {
     // Dedupe and sort members
-    this._room.members = [...new Map(members.map(item => [item.id, item])).values()]
-      .sort((a, b) => a.joinedAt - b.joinedAt);
+    this._room.members = [...new Map(members.map(item => [item.id, item])).values()].sort(
+      (a, b) => a.joinedAt - b.joinedAt
+    );
   }
 
   addRoomMember(member: Member) {
@@ -52,9 +67,7 @@ export default class Store {
   }
 
   updateRoomMember(userId: string, updates: Partial<Member>) {
-    this._room.members = this._room.members.map(member =>
-      member.id === userId ? { ...member, ...updates } : member
-    );
+    this._room.members = this._room.members.map(member => (member.id === userId ? { ...member, ...updates } : member));
   }
 
   getMember(userId: string): Member | undefined {
@@ -92,7 +105,7 @@ export default class Store {
   setStreams(streams: Stream[]) {
     this._room = {
       ...this._room,
-      streams
-    }
+      streams,
+    };
   }
 }

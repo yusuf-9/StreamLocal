@@ -105,15 +105,19 @@ export default class VideoStreamManager {
         })
       );
 
-      const videoPlayer = this.uiManager.getUIElements().videoPlayer as HTMLVideoElement;
-      if (videoPlayer) {
-        videoPlayer.srcObject = null;
-      }
-
-      this.uiManager.showStreamingPlaceholder();
-      this.uiManager.hideVideoPlayer();
-      this.uiManager.showNotification(`${connection.userName} ended video stream`, "warning");
+      this.stopVideoStream();
     });
+  }
+
+  public stopVideoStream() {
+    const videoPlayer = this.uiManager.getUIElements().videoPlayer as HTMLVideoElement;
+    if (videoPlayer) {
+      videoPlayer.srcObject = null;
+    }
+
+    this.uiManager.showStreamingPlaceholder();
+    this.uiManager.hideVideoPlayer();
+    this.uiManager.showNotification(`Video stream has ended`, "info");
   }
 
   async startVideoStream(): Promise<void> {
@@ -137,7 +141,7 @@ export default class VideoStreamManager {
       this.uiManager.hideStreamingPlaceholder();
       this.uiManager.showVideoPlayer();
       this.handleRemoteStream(this.localStream);
-      
+
       this.store.room.members.forEach(async member => {
         const isMe = member.id === this.store.user!.id;
         const isConnected = member.socketId.length > 0;
@@ -159,7 +163,6 @@ export default class VideoStreamManager {
           userId: this.store.user!.id,
         },
       ]);
-      this.store.setRoom({ isVideoStreamActive: true });
       this.uiManager.streamScreenControlButton(true);
       this.uiManager.showNotification("Screen sharing started", "success");
 
@@ -277,7 +280,6 @@ export default class VideoStreamManager {
         return true;
       })
     );
-    this.store.setRoom({ isVideoStreamActive: false });
 
     const elements = this.uiManager.getUIElements();
     const videoPlayer = elements.videoPlayer as HTMLVideoElement;
