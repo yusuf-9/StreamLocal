@@ -96,6 +96,8 @@ export default class UIManager {
     const elements = this.getUIElements();
     const { isMobile, isLeftSidebarOpen, isRightSidebarOpen } = this.store;
 
+    console.log({isMobile, isLeftSidebarOpen, isRightSidebarOpen})
+
     if (isMobile) {
       this.handleMobileLayout(elements, isLeftSidebarOpen, isRightSidebarOpen);
     } else {
@@ -109,41 +111,53 @@ export default class UIManager {
     isRightSidebarOpen: boolean
   ): void {
     // Mobile layout
-    if (isLeftSidebarOpen) {
+    if (!isLeftSidebarOpen) {
       elements.leftSidebar.classList.add("sidebar-mobile");
       elements.leftSidebar.classList.remove("open");
       elements.floatingLeftToggle.classList.remove("hidden");
+      elements.leftSidebar.style.width = "0px";
+      elements.leftSidebar.style.minWidth = "0px";
+      elements.leftSidebar.style.overflow = "hidden";
     } else {
       elements.leftSidebar.classList.add("sidebar-mobile", "open");
       elements.floatingLeftToggle.classList.add("hidden");
+      elements.leftSidebar.style.width = "320px";
+      elements.leftSidebar.style.minWidth = "320px";
+      elements.leftSidebar.style.overflow = "visible";
     }
 
-    if (isRightSidebarOpen) {
+    if (!isRightSidebarOpen) {
       elements.rightSidebar.classList.add("sidebar-mobile-right");
       elements.rightSidebar.classList.remove("open");
       elements.floatingRightToggle.classList.remove("hidden");
+      elements.rightSidebar.style.width = "0px";
+      elements.rightSidebar.style.minWidth = "0px";
+      elements.rightSidebar.style.overflow = "hidden";
     } else {
       elements.rightSidebar.classList.add("sidebar-mobile-right", "open");
       elements.floatingRightToggle.classList.add("hidden");
+      elements.rightSidebar.style.width = "320px";
+      elements.rightSidebar.style.minWidth = "320px";
+      elements.rightSidebar.style.overflow = "visible";
     }
 
-    // Add overlay when sidebar is open
-    if (!isLeftSidebarOpen || !isRightSidebarOpen) {
-      if (!document.getElementById("mobileOverlay")) {
-        const overlay = document.createElement("div");
-        overlay.id = "mobileOverlay";
-        overlay.className = "fixed inset-0 bg-black/50 z-30 lg:hidden";
-        overlay.addEventListener("click", () => {
-          this.store.setMobileLeftSidebarOpen(true);
-          this.store.setMobileRightSidebarOpen(true);
-          this.updateLayout();
-        });
-        document.body.appendChild(overlay);
-      }
-    } else {
-      const overlay = document.getElementById("mobileOverlay");
-      if (overlay) overlay.remove();
-    }
+    // // Add overlay when sidebar is open
+    // if (isLeftSidebarOpen || isRightSidebarOpen) {
+    //   if (!document.getElementById("mobileOverlay")) {
+    //     const overlay = document.createElement("div");
+    //     overlay.id = "mobileOverlay";
+    //     overlay.className = "fixed inset-0 bg-black/50 z-30 lg:hidden";
+    //     overlay.addEventListener("click", () => {
+    //       this.store.setMobileLeftSidebarOpen(false);
+    //       this.store.setMobileRightSidebarOpen(false);
+    //       this.updateLayout();
+    //     });
+    //     document.body.appendChild(overlay);
+    //   }
+    // } else {
+    //   const overlay = document.getElementById("mobileOverlay");
+    //   if (overlay) overlay.remove();
+    // }
   }
 
   private handleDesktopLayout(
@@ -155,7 +169,7 @@ export default class UIManager {
     elements.leftSidebar.classList.remove("sidebar-mobile", "sidebar-mobile-right", "open");
     elements.rightSidebar.classList.remove("sidebar-mobile", "sidebar-mobile-right", "open");
 
-    if (isLeftSidebarOpen) {
+    if (!isLeftSidebarOpen) {
       elements.leftSidebar.style.width = "0px";
       elements.leftSidebar.style.minWidth = "0px";
       elements.leftSidebar.style.overflow = "hidden";
@@ -167,7 +181,7 @@ export default class UIManager {
       elements.floatingLeftToggle.classList.add("hidden");
     }
 
-    if (isRightSidebarOpen) {
+    if (!isRightSidebarOpen) {
       elements.rightSidebar.style.width = "0px";
       elements.rightSidebar.style.minWidth = "0px";
       elements.rightSidebar.style.overflow = "hidden";

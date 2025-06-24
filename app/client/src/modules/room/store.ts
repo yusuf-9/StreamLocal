@@ -18,8 +18,8 @@ export default class Store {
     };
     this._user = null;
     this._isMobile = window.innerWidth < 1024;
-    this._isLeftSidebarOpen = false;
-    this._isRightSidebarOpen = false;
+    this._isLeftSidebarOpen = true
+    this._isRightSidebarOpen = true
     this._isRoomLoaded = false;
   }
 
